@@ -23,7 +23,7 @@ while 1:
     print ('o cliente %s parece ter conectado'%str(addr[0]))
     jogadores.append(Scliente)#para mensagens gerais
     i=i+1
-    if i%2=1:#separa os jogadores em duplas pra facilitar comunicação
+    if i%2==1:#separa os jogadores em duplas pra facilitar comunicação
         time1.append(Scliente)
     else:
         time2.append(Scliente)

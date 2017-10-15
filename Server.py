@@ -1,14 +1,14 @@
 import socket
-
+import sys
 
 #tentar criar um socket
 soquete=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 print ('soquete criado')
 #escolhe uma porta do hospedeiro pro bind
 hospedeiro=socket.gethostname()#descobre o nome da maquina em que esta rodando
-porta=4001
+porta=int(sys.argv[1])
 soquete.bind((hospedeiro,porta))
-print ('soquete colocado na porta '+ str(porta))
+print ('soquete colocado na porta '+ str(porta) +' do local '+ hospedeiro)
 #precisamos esperar os 4 jogadores
 soquete.listen(4)
 jogadores = []
@@ -31,6 +31,6 @@ while 1:
     jogadores[i-1].send(aviso.encode('ascii'))
     if i==2:#alterar para jogar com o numero certo de pessoas
         break
-msg='o jogo iniciara agora.'
+msg='/n o jogo iniciara agora.'
 for i in jogadores:
     i.send(msg.encode('ascii'))

@@ -1,6 +1,10 @@
 import socket
 import sys
+import random
 
+def broadcast(grupo, msg):
+    for i in grupo:
+        i.send(msg.encode('utf-8'))
 def cria_baralho():
     # carta, naipe, valor
     baralho = [("4", "ouros", 1), ("4", "espadas", 1), ("4", "copas", 1), ("4", "paus", 1),
@@ -13,22 +17,30 @@ def cria_baralho():
                 ("dama", "ouros", 8), ("dama", "espadas", 8), ("dama", "copas", 8), ("dama", "paus", 8),
                 ("valete", "ouros", 9), ("valete", "espadas", 9), ("valete", "copas", 9), ("valete", "paus", 9),
                 ("rei", "ouros", 10), ("rei", "espadas", 10), ("rei", "copas", 10), ("rei", "paus", 10),
-                ("ás", "ouros", 11), ("ás", "espadas", 11), ("ás", "copas", 11), ("ás", "paus", 11),
+                ("as", "ouros", 11), ("as", "espadas", 11), ("as", "copas", 11), ("as", "paus", 11),
                 ("2", "ouros", 12), ("2", "espadas", 12), ("2", "copas", 12), ("2", "paus", 12),
                 ("3", "ouros", 13), ("3", "espadas", 13), ("3", "copas", 13), ("3", "paus", 13)
     ]
     return baralho
 
-def distribui_cartas(baralho):
-    # não tenho certeza como funciona o send mas a logica é essa
+def distribui_cartas(grupo, baralho):
+
     cartas = [] # lista vazia de cartas à enviar
-    for i in range (0, 3):
-        for j in range (0, 11):
-            cartas.append(baralho.pop())
-        i.send(cartas)
-        # limpa a lista para o proximo loop
-        cartas.clear()
-return
+    carta=[]
+    #precisa pegar 3 cartas por jogador + o vira
+    for i in range (0, 7):
+        cartas.append(baralho.pop())
+    for j in range (0, 2):
+        for k in range(0,3):
+            carta.append(cartas.pop())
+        #transforma as cartas em strings, para serem enviadas
+        print(str(len(carta)))
+        envio=carta[0][0]+' de '+carta[0][1]+', '+carta[1][0]+' de '+carta[1][1]+', '+carta[2][0]+' de '+carta[2][1]
+        grupo[j].send(envio.encode('utf-8'))
+        for f in range (0,3):
+            baralho.append(carta.pop())
+
+    return cartas.pop()
 
 
 #tentar criar um socket
@@ -54,17 +66,17 @@ while 1:
     jogadores.append(Scliente)#para mensagens gerais
     i=i+1
     if i%2==1:#separa os jogadores em duplas pra facilitar comunicação
-        time1.append(Scliente)
+        time1.append(addr)
     else:
-        time2.append(Scliente)
+        time2.append(addr)
     aviso=('voce e o jogador %d. aguarde todos os jogadores conectarem'% i)
-    jogadores[i-1].send(aviso.encode('ascii'))
+    jogadores[i-1].send(aviso.encode('utf-8'))
     if i==2:#alterar para jogar com o numero certo de pessoas
         break
 msg='\n o jogo iniciara agora.'
-for i in jogadores:
-    i.send(msg.encode('ascii'))
+broadcast(jogadores,msg)
 baralho = cria_baralho()
-shuffle(baralho)
-distribui_cartas(baralho)
-vira = baralho.pop()
+random.shuffle(baralho)
+vira = distribui_cartas(jogadores, baralho)
+msg='O vira desta mão é %s de %s'%(vira[0],vira[1])
+broadcast(jogadores,msg)

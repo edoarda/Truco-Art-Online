@@ -35,12 +35,14 @@ def distribui_cartas(grupo, baralho):
             carta.append(cartas.pop())
         #transforma as cartas em strings, para serem enviadas
         print(str(len(carta)))
-        envio=carta[0][0]+' de '+carta[0][1]+', '+carta[1][0]+' de '+carta[1][1]+', '+carta[2][0]+' de '+carta[2][1]
+        envio=carta[0][0]+' '+carta[0][1]+' '+carta[1][0]+' '+carta[1][1]+' '+carta[2][0]+' '+carta[2][1]
         grupo[j].send(envio.encode('utf-8'))
         for f in range (0,3):
             baralho.append(carta.pop())
 
     return cartas.pop()
+
+
 
 
 #tentar criar um socket
@@ -80,3 +82,14 @@ random.shuffle(baralho)
 vira = distribui_cartas(jogadores, baralho)
 msg='O vira desta mão é %s de %s'%(vira[0],vira[1])
 broadcast(jogadores,msg)
+#a partir daqui, devem ser pedidas as entradas especificas de cada jogador
+inicial=0#jogador que vai começar a mão
+atual=0#jogador da vez
+esperando=1
+while 1:
+    msg= ('jogador %d, é a sua vez:'% atual+1)
+    jogadores[atual].send(msg.encode('utf-8'))
+    while esperando:
+        escolha=soquete.recvfrom(1024)
+        if escolha[1]== addr[atual]:
+            opcoes=escolha[0].decode('utf-8')

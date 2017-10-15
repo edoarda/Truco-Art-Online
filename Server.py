@@ -31,6 +31,6 @@ while 1:
     jogadores[i-1].send(aviso.encode('ascii'))
     if i==2:#alterar para jogar com o numero certo de pessoas
         break
-msg='/n o jogo iniciara agora.'
+msg='\n o jogo iniciara agora.'
 for i in jogadores:
     i.send(msg.encode('ascii'))

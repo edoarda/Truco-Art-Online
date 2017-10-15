@@ -1,6 +1,36 @@
 import socket
 import sys
 
+def cria_baralho():
+    # carta, naipe, valor
+    baralho = [("4", "ouros", 1), ("4", "espadas", 1), ("4", "copas", 1), ("4", "paus", 1),
+                ("5", "ouros", 2), ("5", "espadas", 2), ("5", "copas", 2), ("5", "paus", 2),
+                ("6", "ouros", 3), ("6", "espadas", 3), ("6", "copas", 3), ("6", "paus", 3),
+                ("7", "ouros", 4), ("7", "espadas", 4), ("7", "copas", 4), ("7", "paus", 4),
+                ("8", "ouros", 5), ("8", "espadas", 5), ("8", "copas", 5), ("8", "paus", 5),
+                ("9", "ouros", 6), ("9", "espadas", 6), ("9", "copas", 6), ("9", "paus", 6),
+                ("10", "ouros", 7), ("10", "espadas", 7), ("10", "copas", 7), ("10", "paus", 7),
+                ("dama", "ouros", 8), ("dama", "espadas", 8), ("dama", "copas", 8), ("dama", "paus", 8),
+                ("valete", "ouros", 9), ("valete", "espadas", 9), ("valete", "copas", 9), ("valete", "paus", 9),
+                ("rei", "ouros", 10), ("rei", "espadas", 10), ("rei", "copas", 10), ("rei", "paus", 10),
+                ("ás", "ouros", 11), ("ás", "espadas", 11), ("ás", "copas", 11), ("ás", "paus", 11),
+                ("2", "ouros", 12), ("2", "espadas", 12), ("2", "copas", 12), ("2", "paus", 12),
+                ("3", "ouros", 13), ("3", "espadas", 13), ("3", "copas", 13), ("3", "paus", 13)
+    ]
+    return baralho
+
+def distribui_cartas(baralho):
+    # não tenho certeza como funciona o send mas a logica é essa
+    cartas = [] # lista vazia de cartas à enviar
+    for i in range (0, 3):
+        for j in range (0, 11):
+            cartas.append(baralho.pop())
+        i.send(cartas)
+        # limpa a lista para o proximo loop
+        cartas.clear()
+return
+
+
 #tentar criar um socket
 soquete=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 print ('soquete criado')
@@ -34,3 +64,7 @@ while 1:
 msg='\n o jogo iniciara agora.'
 for i in jogadores:
     i.send(msg.encode('ascii'))
+baralho = cria_baralho()
+shuffle(baralho)
+distribui_cartas(baralho)
+vira = baralho.pop()

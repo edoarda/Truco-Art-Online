@@ -2,11 +2,17 @@ import socket
 import sys
 
 #1,2,3,4
-def decode (codigo):
+def decode (codigo, numjogador):
     codigo.split(' ', 2)
+    if codigo[0] == 'V' && codigo[1] == numjogador:
+        #manda a jogada do filho da pudim
 
-    if codigo[0] == 'V':
-        tretas
+    if codigo[0] == 'T' && codigo[1] != numjogador:
+        #caso tenha recebido a mensagem do truco
+        print("Jogador " + codigo[1] + "pediu truco. O que você faz?\n")
+        resp = input("Escolha sua ação:\n 1-RETRUCAR!!!\n 2-Aceitar\n 3-Fugir\n")
+        #send (T resp)
+
 #tentar criar um socket
 c_sock=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 print ('soquete criado')

@@ -7,7 +7,7 @@ print ('soquete criado')
 #eis aqui a porta de destino
 destino=sys.argv[1]
 porta=int(sys.argv[2])
-
+mao=[]
 print ('tentando acessar a porta '+ str(porta) +' do local '+ destino)
 #precisamos esperar os 4 jogadores
 c_sock.connect((destino,porta))
@@ -18,10 +18,12 @@ msg=c_sock.recv(1024)
 print (msg.decode('utf-8'))
 msg=c_sock.recv(1024)
 print (msg.decode('utf-8'))
-cartaS[]=msg.split(6)
+pilo=msg.decode('utf-8')
+cartaS=pilo.split(' ',6)
 for i in range(0,6,2):
     carta=(cartaS[i],cartaS[i+1])
-    mao[].append(carta)
+    mao.append(carta)
+    print(mao[0][1])
 
 msg=c_sock.recv(1024)
 print (msg.decode('utf-8'))
@@ -33,8 +35,8 @@ while 1:
     if int(resp)==1 or int(resp)==2:
         print ('Escolha a carta a ser jogada:')
         for i in range (0,len(mao)):#loop para botar as opções na tela
-            print('%d- %s de %s\n'% i,mao[i][0],mao[i][1])
+            print('%s- %s de %s '% (str(i), mao[i][0], mao[i][1]))
         resp2=input("responda com o numero correspondente a carta escolhida")
-        opcao=mao.pop(resp2-1)
+        opcao=mao.pop(int(resp2) - 1)
         choice= resp +' '+ opcao[0]+' '+opcao[1]
     c_sock.send(choice.encode('utf-8'))

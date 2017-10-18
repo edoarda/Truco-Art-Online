@@ -62,9 +62,11 @@ def compara(carta1, carta2, carta3, carta4, vira):
             if naipeValor[indexMaior[i]]>indexM:
                 indexM = indexMaior[i]
         return indexM
-    
-def distribui_cartas(grupo, baralho):
 
+def distribui_cartas(grupo, maos, baralho):
+    if len(maos)!=0:
+        for p in range(0, len(maos)):
+            maos.remove()
     cartas = [] # lista vazia de cartas à enviar
     carta=[]
     #precisa pegar 3 cartas por jogador + o vira
@@ -76,12 +78,10 @@ def distribui_cartas(grupo, baralho):
         #transforma as cartas em strings, para serem enviadas
         print(str(len(carta)))
         envio=carta[0][0]+' '+carta[0][1]+' '+carta[1][0]+' '+carta[1][1]+' '+carta[2][0]+' '+carta[2][1]
-        grupo[j].send(envio.encode('utf-8'))
+        grupo[j].send(envio.encode('utf-8'))      
         for f in range (0,3):
-            baralho.append(carta.pop())
-
+            maos.append(carta.pop())
     return cartas.pop()
-
 
 
 
@@ -96,6 +96,7 @@ print ('soquete colocado na porta '+ str(porta) +' do local '+ hospedeiro)
 #precisamos esperar os 4 jogadores
 soquete.listen(4)
 jogadores = []
+mao_jogadores=[]
 #divisão dos jogadores em times
 time1 = []
 time2= []
@@ -119,7 +120,7 @@ msg='\n o jogo iniciara agora.'
 broadcast(jogadores,msg)
 baralho = cria_baralho()
 random.shuffle(baralho)
-vira = distribui_cartas(jogadores, baralho)
+vira = distribui_cartas(jogadores,mao_jogadores, baralho)
 msg='O vira desta mão é %s de %s'%(vira[0],vira[1])
 broadcast(jogadores,msg)
 #a partir daqui, devem ser pedidas as entradas especificas de cada jogador
@@ -127,7 +128,7 @@ inicial=0#jogador que vai começar a mão
 atual=0#jogador da vez
 esperando=1
 while 1:
-    msg= ('jogador %d, é a sua vez:'% atual+1)
+    msg= ('jogador %s, é a sua vez:'% str(atual+1))
     jogadores[atual].send(msg.encode('utf-8'))
     while esperando:
         escolha=soquete.recvfrom(1024)

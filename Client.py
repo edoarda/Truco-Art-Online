@@ -1,6 +1,12 @@
 import socket
 import sys
 
+#1,2,3,4
+def decode (codigo):
+    codigo.split(' ', 2)
+
+    if codigo[0] == 'V':
+        tretas
 #tentar criar um socket
 c_sock=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 print ('soquete criado')
@@ -13,6 +19,8 @@ print ('tentando acessar a porta '+ str(porta) +' do local '+ destino)
 c_sock.connect((destino,porta))
 print ('conectado ao servidor')
 aviso=c_sock.recv(1024)
+numjogador = aviso.split('|',3)
+numjogador = numjogador[1]
 print (aviso.decode('utf-8'))
 msg=c_sock.recv(1024)
 print (msg.decode('utf-8'))
@@ -29,7 +37,15 @@ msg=c_sock.recv(1024)
 print (msg.decode('utf-8'))
 while 1:
     #cria
-    msg=c_sock.recv(1024)
+    while 1:
+        msg=c_sock.recv(1024)
+        print (msg.decode('utf-8'))
+        njogador = msg.split(':', 2)
+        if njogador[1] == numjogador:
+            print("É a sua vez")
+            break
+        else:
+            print("Aguarde sua vez")
     print("Escolha sua ação:\n 1-Jogar carta aberta\n 2-Jogar carta fechada\n 3-Pedir truco\n")
     resp=input("responda com o numero correspondente:")
     if int(resp)==1 or int(resp)==2:

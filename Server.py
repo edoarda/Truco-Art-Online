@@ -5,6 +5,8 @@ import random
 def broadcast(grupo, msg):
     for i in grupo:
         i.send(msg.encode('utf-8'))
+    return
+
 def cria_baralho():
     # carta, naipe, valor
     baralho = [("4", "ouros", 1), ("4", "espadas", 1), ("4", "copas", 1), ("4", "paus", 1),
@@ -38,7 +40,7 @@ def distribui_cartas(grupo, maos, baralho):
         #transforma as cartas em strings, para serem enviadas
         print(str(len(carta)))
         envio=carta[0][0]+' de '+carta[0][1]+', '+carta[1][0]+' de '+carta[1][1]+', '+carta[2][0]+' de '+carta[2][1]
-        grupo[j].send(envio.encode('utf-8'))      
+        grupo[j].send(envio.encode('utf-8'))
         for f in range (0,3):
             maos.append(carta.pop())
 

@@ -22,6 +22,9 @@ def cria_baralho():
                 ("3", "ouros", 13), ("3", "espadas", 13), ("3", "copas", 13), ("3", "paus", 13)
     ]
     return baralho
+def encode(letra,Nplayer,carta=' '):
+    msg = letra+':'+Nplayer+':'+carta
+    return msg
 
 def distribui_cartas(grupo, maos, baralho):
     if len(maos)!=0:
@@ -42,6 +45,13 @@ def distribui_cartas(grupo, maos, baralho):
         for f in range (0,3):
             maos.append(carta.pop())
     return cartas.pop()
+
+def mao():
+    num=rodada()
+    if (num==-1):
+        return
+    else:
+        num=rodada()
 
 
 
@@ -88,9 +98,10 @@ inicial=0#jogador que vai começar a mão
 atual=0#jogador da vez
 esperando=1
 while 1:
-    msg= ('v:%s'% str(atual+1))
-    jogadores[atual].send(msg.encode('utf-8'))
-    while esperando:
-        escolha=soquete.recv(1024)
-        if escolha[1]== addr[atual]:
-            opcoes=escolha[0].decode('utf-8')
+    mao()
+    #msg= ('v:%s'% str(atual+1))
+    #jogadores[atual].send(msg.encode('utf-8'))
+    #while esperando:
+    #    escolha=soquete.recv(1024)
+    #   if escolha[1]== addr[atual]:
+    #      opcoes=escolha[0].decode('utf-8')

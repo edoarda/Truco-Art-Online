@@ -2,8 +2,12 @@ import socket
 import sys
 
 #1,2,3,4
+def encode(letra,Nplayer,carta=' '):
+    msg = letra+':'+Nplayer+':'+carta
+    return msg
+
 def decode (codigo, numjogador):
-    codigo.split(' ', 2)
+    codigo.split(' ', 3)
     if codigo[0] == 'V' && codigo[1] == numjogador:
         #manda a jogada do filho da pudim
 

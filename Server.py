@@ -5,6 +5,50 @@ import random
 def broadcast(grupo, msg):
     for i in grupo:
         i.send(msg.encode('utf-8'))
+
+#parte de comparação        
+def compara(carta1, carta2, carta3, carta4, vira):
+    valor=[carta1[2],carta2[2],carta3[2],carta4[2]]
+    naipe=[carta1[1],carta2[1],carta3[1],carta4[1]]
+    naipeValor = []
+    for i in range(0 , 4):
+        if valor[i] == vira[2]+1:
+            valor[i]=14
+    maior = max(valor)
+    comMaiorNumero = valor.count(maior)
+    if comMaiorNumero == 1:
+        indexMaior = 0
+        for i in range(0,4):
+            if valor[i] == maior:
+                indexMaior = i
+        return indexMaior
+    if comMaiorNumero > 1:
+        indexMaior = []
+        for i in range(0,4):
+            if valor[i] == maior:
+                indexMaior.append(i)
+            if naipe[i] != "ouros" and naipe[i] != "espadas" and naipe[i] != "copas" and naipe[i] != "paus":
+                print("fudeu")
+                naipeValor.append(0)
+            if naipe[i] == "ouros":
+                naipeValor.append(1)
+            if naipe[i] == "espadas":
+                naipeValor.append(2)
+            if naipe[i] == "copas":
+                naipeValor.append(3)
+            if naipe[i] == "paus":
+                naipeValor.append(4)
+        indexM = 0
+        if max(naipeValor) == 0:
+            return -1
+        for i in range(len(indexMaior)):
+            print(naipeValor[indexMaior[i]])
+            if naipeValor[indexMaior[i]]>indexM:
+                indexM = indexMaior[i]
+        return indexM
+
+#fim parte de comparação de cartas
+    
 def cria_baralho():
     # carta, naipe, valor
     baralho = [("4", "ouros", 1), ("4", "espadas", 1), ("4", "copas", 1), ("4", "paus", 1),
@@ -22,9 +66,14 @@ def cria_baralho():
                 ("3", "ouros", 13), ("3", "espadas", 13), ("3", "copas", 13), ("3", "paus", 13)
     ]
     return baralho
+
+#parte de codificação e decodificação de mensagens
 def encode(letra,Nplayer,carta=' '):
     msg = letra+':'+Nplayer+':'+carta
     return msg
+def decodeSvr(codigo,numJogador):
+    codigo.split(':',3)
+    if codigo[0] == 'T' and codigo[1] == numjogador:
 
 def distribui_cartas(grupo, maos, baralho):
     if len(maos)!=0:
@@ -46,12 +95,12 @@ def distribui_cartas(grupo, maos, baralho):
             maos.append(carta.pop())
     return cartas.pop()
 
-def mao():
-    num=rodada()
-    if (num==-1):
-        return
-    else:
-        num=rodada()
+#def mao():
+#    num=rodada()
+#    if (num==-1):
+#        return
+#    else:
+#        num=rodada()
 
 
 
@@ -82,7 +131,7 @@ while 1:
         time1.append(addr)
     else:
         time2.append(addr)
-    aviso=('voce e o jogador |%d|. aguarde todos os jogadores conectarem'% i)
+    aviso=('voce e o jogador %d. aguarde todos os jogadores conectarem'% i)
     jogadores[i-1].send(aviso.encode('utf-8'))
     if i==2:#alterar para jogar com o numero certo de pessoas
         break
@@ -97,11 +146,26 @@ broadcast(jogadores,msg)
 inicial=0#jogador que vai começar a mão
 atual=0#jogador da vez
 esperando=1
+cartas_jogadas[]
 while 1:
     mao()
-    #msg= ('v:%s'% str(atual+1))
+    #msg= ('V:%s: '% str(atual))
     #jogadores[atual].send(msg.encode('utf-8'))
     #while esperando:
     #    escolha=soquete.recv(1024)
     #   if escolha[1]== addr[atual]:
     #      opcoes=escolha[0].decode('utf-8')
+
+
+def mao():
+    mensagem=encode(V,atual)
+    broadcast(jogadores,msg)
+    while 1:
+        recebe=soquete.recv(1024)
+        M_atual=recebe.decode('utf-8')
+        
+        
+
+   
+
+

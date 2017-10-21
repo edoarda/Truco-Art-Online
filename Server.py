@@ -68,12 +68,32 @@ def cria_baralho():
     return baralho
 
 #parte de codificação e decodificação de mensagens
-def encode(letra,Nplayer,carta=' '):
-    msg = letra+':'+Nplayer+':'+carta
+def encode(letra,Nplayer,opt=' '):
+    msg = letra+':'+Nplayer+':'+opt
     return msg
-def decodeSvr(codigo,numJogador):
-    codigo.split(':',3)
-    if codigo[0] == 'T' and codigo[1] == numjogador:
+
+def decodeSvr(codigo,numJogador,valor_rodada,mao):
+    guarda=codigo.split(':',3)
+    if guarda[0]== 'F' and guarda[1]==numJogador:
+        msg=('o jogador %s jogou uma carta fechada'% str(guarda[1]+1))
+        envio=encode('M','4',msg)
+        broadcast(jogadores,envio)
+
+    
+    if guarda[0] == 'T' and guarda[1] == numJogador:
+        envio=encode(guarda[0],guarda[1])
+        if (guarda[1]%2==1):
+            broacast(time2,envio)
+        else:
+            broadcast(time1,envio)
+    elif guarda[2] in ['r','a','f']:#fugir
+        if guarda[2]=='f':
+            #arrumar um meio de declarar derrota da dupla que fugiu
+            #e começar uma nova mão
+        elif guarda[2]=='r'and (valor_rodada<=12):#retrucar
+            #
+            #
+            
 
 def distribui_cartas(grupo, maos, baralho):
     if len(maos)!=0:
@@ -147,6 +167,7 @@ inicial=0#jogador que vai começar a mão
 atual=0#jogador da vez
 esperando=1
 cartas_jogadas[]
+valor_rodada=1
 while 1:
     mao()
     #msg= ('V:%s: '% str(atual))

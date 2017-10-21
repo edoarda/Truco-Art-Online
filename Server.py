@@ -28,7 +28,7 @@ def compara(carta1, carta2, carta3, carta4, vira):
             if valor[i] == maior:
                 indexMaior.append(i)
             if naipe[i] != "ouros" and naipe[i] != "espadas" and naipe[i] != "copas" and naipe[i] != "paus":
-                print("fudeu")
+                #se chegou aqui entao todas as cartas foram jogadas viradas pra baixo
                 naipeValor.append(0)
             if naipe[i] == "ouros":
                 naipeValor.append(1)

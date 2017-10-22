@@ -5,12 +5,12 @@ import socket
 #funçoes implementadas
 
 #função para pegar mensagens enviadas garantir que é só uma mensagem mesmo
-def receber(c_sock):
+def receber(mensagem,c_socket):
     while 1:
-        msg += c_socket.recv(1024)
-        if 'Ç' in msg:
-            msg.split('Ç')
-            return msg[0]
+        mensagem += c_socket.recv(1024)
+        if 'Ç' in mensagem:
+            mensagem.split('Ç')
+            return mensagem[0]
 
 def encode(letra,Nplayer,carta=' '):
     msg = letra+':'+Nplayer+':'+carta
@@ -116,7 +116,7 @@ print ('conectado ao servidor')
 while 1:
     #loop de jogo
     #aguardar resposta
-    #recebido=c_sock.recv(1024)
+    recebido=c_sock.recv(1024)
     #decodeClnt(recebido)
-    recebido = receber(c_sock)
+    recebido = receber(recebido,c_sock)
     decodeClnt(recebido,mao)

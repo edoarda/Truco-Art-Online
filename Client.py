@@ -34,7 +34,7 @@ def decodeClnt (codigo,mao):
         print(msg[2])
     elif msg[0]=='N':
         numero = msg[1]
-        print ('Você é o jogador :%d:'%numero)
+        print ('Você é o jogador :%s:'%numero)
     elif msg[0]=='V':
         print('É a sua vez')
         print("Escolha sua ação:\n 1-Jogar carta aberta\n 2-Jogar carta fechada\n 3-Pedir truco\n")
@@ -45,7 +45,7 @@ def decodeClnt (codigo,mao):
                 print('%s- %s de %s '% (str(i), mao[i][0], mao[i][1]))
             resp2=input("responda com o numero correspondente a carta escolhida")
             opcao=mao.pop(int(resp2) - 1)
-            msg=encode('A',numjogador,(resp2-1))
+            msg=encode('A',str(numjogador),str(resp2-1))
         if int(resp)==2:
             print ('Escolha a carta a ser jogada:')
             for i in range (0,len(mao)):#loop para botar as opções na tela
@@ -98,4 +98,4 @@ while 1:
     #loop de jogo
     #aguardar resposta
     recebido=c_sock.recv(1024)
-    decodeClnt(recebido)
+    decodeClnt(recebido,mao)

@@ -92,11 +92,11 @@ def decodeSvr(codigo,numJogador,valor_rodada,mao,C_jogadas):
             broadcast(time2,envio)
         else:
             broadcast(time1,envio)
-    elif guarda[2] in ['r','a','f']:#fugir
-        if guarda[2]=='f':
+    #elif guarda[2] in ['r','a','f']:#fugir
+    #    if guarda[2]=='f':
             #arrumar um meio de declarar derrota da dupla que fugiu
             #e começar uma nova mão
-        elif guarda[2]=='r'and (valor_rodada<=12):#retrucar
+   #     elif guarda[2]=='r'and (valor_rodada<=12):#retrucar
             #
             #
             
@@ -163,7 +163,7 @@ while 1:
         time1.append(addr)
     else:
         time2.append(addr)
-    aviso=('voce e o jogador %d. aguarde todos os jogadores conectarem'% i)
+    aviso=('voce e o jogador :%d:. aguarde todos os jogadores conectarem'% i)
     jogadores[i-1].send(aviso.encode('utf-8'))
     if i==2:#alterar para jogar com o numero certo de pessoas
         break
@@ -173,15 +173,19 @@ baralho = cria_baralho()
 random.shuffle(baralho)
 vira = distribui_cartas(jogadores,mao_jogadores, baralho)
 msg='O vira desta mão é %s de %s'%(vira[0],vira[1])
-broadcast(jogadores,msg)
+jogadores[0].send(msg.encode('utf-8'))
+jogadores[1].send(msg.encode('utf-8'))
+
+#broadcast(jogadores,msg)
 #a partir daqui, devem ser pedidas as entradas especificas de cada jogador
 inicial=0#jogador que vai começar a mão
 atual=0#jogador da vez
 esperando=1
-cartas_jogadas[]
+cartas_jogadas=[]
 valor_rodada=1
 while 1:
-    recebido=soquete.recv(1024)
+    broadcast(jogadores,encode('V',str(atual)))
+    recebido=jogadores[atual].recv(1024)
     decodeSvr(recebido.decode('utf-8'),atual,1,mao_jogadores,C_jogadas)
     atual=atual+1
     if atual>1:

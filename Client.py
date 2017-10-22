@@ -6,14 +6,33 @@ def encode(letra,Nplayer,carta=' '):
     msg = letra+':'+Nplayer+':'+carta
     return msg
 
-def decode (codigo, numjogador):
-    codigo.split(' ', 3)
-    if codigo[0] == 'V' && codigo[1] == numjogador:
-        #manda a jogada do filho da pudim
+def decodeClnt (codigo, numjogador):
+    guarda=codigo.split(':')
+    if guarda[0]=='M':
+        print(guarda[2])
+    
+    elif guarda[0] == 'V' and guarda[1] == numjogador:
+        print("Escolha sua ação:\n 1-Jogar carta aberta\n 2-Jogar carta fechada\n 3-Pedir truco\n")
+        resp=input("responda com o numero correspondente:")
+        if int(resp)==1:
+            print ('Escolha a carta a ser jogada:')
+            for i in range (0,len(mao)):#loop para botar as opções na tela
+                print('%s- %s de %s '% (str(i), mao[i][0], mao[i][1]))
+            resp2=input("responda com o numero correspondente a carta escolhida")
+            opcao=mao.pop(int(resp2) - 1)
+            msg=encode('A',numjogador,(resp2-1))
+        if int(resp)==2:
+            print ('Escolha a carta a ser jogada:')
+            for i in range (0,len(mao)):#loop para botar as opções na tela
+                print('%s- %s de %s '% (str(i), mao[i][0], mao[i][1]))
+            resp2=input("responda com o numero correspondente a carta escolhida")
+            opcao=mao.pop(int(resp2) - 1)
+            msg=encode('F',numjogador,(resp2-1))
+        c_sock.send(msg.encode('utf-8'))
 
-    if codigo[0] == 'T' && codigo[1] != numjogador:
+    elif guarda[0] == 'T' and guarda[1] != numjogador:
         #caso tenha recebido a mensagem do truco
-        print("Jogador " + codigo[1] + "pediu truco. O que você faz?\n")
+        print("Jogador " + guarda[1] + "pediu truco. O que você faz?\n")
         resp = input("Escolha sua ação:\n 1-RETRUCAR!!!\n 2-Aceitar\n 3-Fugir\n")
         #send (T resp)
 
@@ -28,10 +47,11 @@ print ('tentando acessar a porta '+ str(porta) +' do local '+ destino)
 #precisamos esperar os 4 jogadores
 c_sock.connect((destino,porta))
 print ('conectado ao servidor')
-aviso=c_sock.recv(1024)
-numjogador = aviso.split('|',3)
+baite=c_sock.recv(1024)
+aviso=baite.decode('utf-8')
+numjogador = aviso.split(':')
 numjogador = numjogador[1]
-print (aviso.decode('utf-8'))
+print (aviso)
 msg=c_sock.recv(1024)
 print (msg.decode('utf-8'))
 msg=c_sock.recv(1024)
@@ -43,26 +63,8 @@ for i in range(0,6,2):
     mao.append(carta)
     print(mao[0][1])
 
-msg=c_sock.recv(1024)
-print (msg.decode('utf-8'))
+
 while 1:
-    #cria
-    while 1:
-        msg=c_sock.recv(1024)
-        print (msg.decode('utf-8'))
-        njogador = msg.split(':', 2)
-        if njogador[1] == numjogador:
-            print("É a sua vez")
-            break
-        else:
-            print("Aguarde sua vez")
-    print("Escolha sua ação:\n 1-Jogar carta aberta\n 2-Jogar carta fechada\n 3-Pedir truco\n")
-    resp=input("responda com o numero correspondente:")
-    if int(resp)==1 or int(resp)==2:
-        print ('Escolha a carta a ser jogada:')
-        for i in range (0,len(mao)):#loop para botar as opções na tela
-            print('%s- %s de %s '% (str(i), mao[i][0], mao[i][1]))
-        resp2=input("responda com o numero correspondente a carta escolhida")
-        opcao=mao.pop(int(resp2) - 1)
-        choice= resp +' '+ opcao[0]+' '+opcao[1]
-    c_sock.send(choice.encode('utf-8'))
+    msg=c_sock.recv(1024)
+    segura=(msg.decode('utf-8'))
+    decodeClnt (segura, numjogador)

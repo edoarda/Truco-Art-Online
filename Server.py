@@ -3,10 +3,53 @@ import sys
 import random
 
 def broadcast(grupo, msg):
+    broad = encode('M',0,msg)
     for i in grupo:
-        i.send(msg.encode('utf-8'))
-    return
+        i.send(broad.encode('utf-8'))
 
+#parte de comparação        
+def compara(carta1, carta2, carta3, carta4, vira):
+    valor=[carta1[2],carta2[2],carta3[2],carta4[2]]
+    naipe=[carta1[1],carta2[1],carta3[1],carta4[1]]
+    naipeValor = []
+    for i in range(0 , 4):
+        if valor[i] == vira[2]+1:
+            valor[i]=14
+    maior = max(valor)
+    comMaiorNumero = valor.count(maior)
+    if comMaiorNumero == 1:
+        indexMaior = 0
+        for i in range(0,4):
+            if valor[i] == maior:
+                indexMaior = i
+        return indexMaior
+    if comMaiorNumero > 1:
+        indexMaior = []
+        for i in range(0,4):
+            if valor[i] == maior:
+                indexMaior.append(i)
+            if naipe[i] != "ouros" and naipe[i] != "espadas" and naipe[i] != "copas" and naipe[i] != "paus":
+                #se chegou aqui entao todas as cartas foram jogadas viradas pra baixo
+                naipeValor.append(0)
+            if naipe[i] == "ouros":
+                naipeValor.append(1)
+            if naipe[i] == "espadas":
+                naipeValor.append(2)
+            if naipe[i] == "copas":
+                naipeValor.append(3)
+            if naipe[i] == "paus":
+                naipeValor.append(4)
+        indexM = 0
+        if max(naipeValor) == 0:
+            return -1
+        for i in range(len(indexMaior)):
+            print(naipeValor[indexMaior[i]])
+            if naipeValor[indexMaior[i]]>indexM:
+                indexM = indexMaior[i]
+        return indexM
+
+#fim parte de comparação de cartas
+    
 def cria_baralho():
     # carta, naipe, valor
     baralho = [("4", "ouros", 1), ("4", "espadas", 1), ("4", "copas", 1), ("4", "paus", 1),
@@ -25,6 +68,40 @@ def cria_baralho():
     ]
     return baralho
 
+#parte de codificação e decodificação de mensagens
+def encode(letra,Nplayer,opt=' '):
+    msg = letra+':'+Nplayer+':'+opt
+    return msg
+
+def decodeSvr(codigo,numJogador,valor_rodada,mao,C_jogadas):
+    guarda=codigo.split(':',3)
+    if guarda[0]== 'F' and guarda[1]==numJogador:
+        msg=('o jogador %s jogou uma carta fechada'% str(guarda[1]+1))
+        envio=encode('M','4',msg)
+        broadcast(jogadores,envio)
+        jogar_carta(guarda[2],guarda[1],1,C_jogadas,mao)
+    elif guarda[0] == 'A' and guarda[1]==numJogador:
+        jogar_carta(guarda[2],guarda[1],0,C_jogadas,mao)
+        msg=('o jogador %s jogou %s de %s'%(str(guarda[1]+1),C_jogadas[guarda[1]][0],C_jogadas[guarda[1]][1]))
+        envio=encode('M',4,msg)
+        broadcast(jogadores,envio)
+
+    
+    if guarda[0] == 'T' and guarda[1] == numJogador:
+        envio=encode(guarda[0],guarda[1])
+        if (guarda[1]%2==1):
+            broadcast(time2,envio)
+        else:
+            broadcast(time1,envio)
+    #elif guarda[2] in ['r','a','f']:#fugir
+    #    if guarda[2]=='f':
+            #arrumar um meio de declarar derrota da dupla que fugiu
+            #e começar uma nova mão
+   #     elif guarda[2]=='r'and (valor_rodada<=12):#retrucar
+            #
+            #
+            
+
 def distribui_cartas(grupo, maos, baralho):
     if len(maos)!=0:
         for p in range(0, len(maos)):
@@ -39,14 +116,25 @@ def distribui_cartas(grupo, maos, baralho):
             carta.append(cartas.pop())
         #transforma as cartas em strings, para serem enviadas
         print(str(len(carta)))
-        envio=carta[0][0]+' de '+carta[0][1]+', '+carta[1][0]+' de '+carta[1][1]+', '+carta[2][0]+' de '+carta[2][1]
-        grupo[j].send(envio.encode('utf-8'))
+        envio='C'+':'+ carta[0][0]+':'+carta[0][1]+':'+carta[1][0]+':'+carta[1][1]+':'+carta[2][0]+':'+carta[2][1]
+        grupo[j].send(envio.encode('utf-8'))      
         for f in range (0,3):
             maos.append(carta.pop())
-
-
     return cartas.pop()
 
+#def mao():
+#    num=rodada()
+#    if (num==-1):
+#        return
+#    else:
+#        num=rodada()
+
+def jogar_carta(carta,player,tipo,lista,maos):
+    if tipo:
+        #joga uma carta fechada
+        lista[player]=('coringa','nada',0)
+    else:
+        lista[player]=maos[(player*3)+carta]
 
 #tentar criar um socket
 soquete=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
@@ -60,6 +148,7 @@ print ('soquete colocado na porta '+ str(porta) +' do local '+ hospedeiro)
 soquete.listen(4)
 jogadores = []
 mao_jogadores=[]
+C_jogadas=[(),(),(),()]
 #divisão dos jogadores em times
 time1 = []
 time2= []
@@ -75,7 +164,8 @@ while 1:
         time1.append(addr)
     else:
         time2.append(addr)
-    aviso=('voce e o jogador %d. aguarde todos os jogadores conectarem'% i)
+    #aviso=('voce e o jogador :%d:. aguarde todos os jogadores conectarem'% i)
+    aviso=encode('N',i," ")
     jogadores[i-1].send(aviso.encode('utf-8'))
     if i==2:#alterar para jogar com o numero certo de pessoas
         break
@@ -83,6 +173,41 @@ msg='\n o jogo iniciara agora.'
 broadcast(jogadores,msg)
 baralho = cria_baralho()
 random.shuffle(baralho)
-vira = distribui_cartas(jogadores,mao_jogadores,baralho)
+vira = distribui_cartas(jogadores,mao_jogadores, baralho)
 msg='O vira desta mão é %s de %s'%(vira[0],vira[1])
+#jogadores[0].send(msg.encode('utf-8'))
+#jogadores[1].send(msg.encode('utf-8'))
 broadcast(jogadores,msg)
+
+#a partir daqui, devem ser pedidas as entradas especificas de cada jogador
+inicial=0#jogador que vai começar a mão
+atual=0#jogador da vez
+esperando=1
+cartas_jogadas=[]
+valor_rodada=1
+while 1:
+    #ta estranho mas não vou mudar o de baixo
+    broadcast(jogadores,encode('V',str(atual)))
+
+    recebido=jogadores[atual].recv(1024)
+    decodeSvr(recebido.decode('utf-8'),atual,1,mao_jogadores,C_jogadas)
+    atual=atual+1
+    if atual>1:
+        atual=0#super gambiarra
+    
+    #msg= ('V:%s: '% str(atual))
+    #jogadores[atual].send(msg.encode('utf-8'))
+    #while esperando:
+    #    escolha=soquete.recv(1024)
+    #   if escolha[1]== addr[atual]:
+    #      opcoes=escolha[0].decode('utf-8')
+
+
+
+    
+        
+        
+
+   
+
+

@@ -13,7 +13,7 @@ def receber(mensagem,c_socket):
             return mensagem[0]
 
 def encode(letra,Nplayer,carta=' '):
-    msg = letra+':'+Nplayer+':'+carta
+    msg = letra+':'+Nplayer+':'+carta + 'Ç'
     return msg
 
 #Mensagens que podem ser recebidas pelo cliente

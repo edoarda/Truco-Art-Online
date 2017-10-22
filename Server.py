@@ -74,6 +74,7 @@ def encode(letra,Nplayer,opt=' '):
     return msg
 
 def receber(atual, jogadores):
+    msg = ''
     while 1:
         msg += jogadores[atual].recv(1024)
         if 'Ç' in msg:

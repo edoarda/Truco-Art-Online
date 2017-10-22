@@ -4,11 +4,6 @@ import socket
 
 #funçoes implementadas
 
-
-def encode(letra,Nplayer,carta=' '):
-    msg = letra+':'+Nplayer+':'+carta + 'Ç'
-    return msg
-
 #função para pegar mensagens enviadas garantir que é só uma mensagem mesmo
 def receber(c_sock):
     while 1:
@@ -17,6 +12,10 @@ def receber(c_sock):
             msg.split('Ç')
             return msg[0]
 
+def encode(letra,Nplayer,carta=' '):
+    msg = letra+':'+Nplayer+':'+carta
+    return msg
+
 #Mensagens que podem ser recebidas pelo cliente
 # Cabeçalho M = mensagens gerais
 # Cabeçalho N = Numero do jogador
@@ -24,9 +23,6 @@ def receber(c_sock):
 # Cabeçalho C = Cartas deste cliente
 # Cabeçalho T = Pedido de truco inimigo
 # Cabeçalho E = Fim do jogo
-
-### Ç: MARCADOR DE FIM DA MENSAGEM ###
-
 #Mensagens Enviadas pelo cliente
 # Cabeçalho A = Jogar carta aberta
 # Cabeçalho F = Jogar carta fechada
@@ -34,6 +30,8 @@ def receber(c_sock):
 # Cabeçalho K = Aceitar truco
 # Cabeçalho D = Fugir do truco
 # Cabeçalho R = Pedido Retruco
+
+
 
 def decodeClnt (codigo,mao):
     deco = codigo.decode('utf-8')
@@ -43,7 +41,7 @@ def decodeClnt (codigo,mao):
         print(msg[2])
     elif msg[0]=='N':
         numero = msg[1]
-        print ('Você é o jogador :%s:'%numero)
+        print ('Você é o jogador :%d:'%numero)
     elif msg[0]=='V':
         print('É a sua vez')
         print("Escolha sua ação:\n 1-Jogar carta aberta\n 2-Jogar carta fechada\n 3-Pedir truco\n")
@@ -54,7 +52,7 @@ def decodeClnt (codigo,mao):
                 print('%s- %s de %s '% (str(i), mao[i][0], mao[i][1]))
             resp2=input("responda com o numero correspondente a carta escolhida")
             opcao=mao.pop(int(resp2) - 1)
-            msg=encode('A',str(numjogador),str(resp2-1))
+            msg=encode('A',numjogador,(resp2-1))
         if int(resp)==2:
             print ('Escolha a carta a ser jogada:')
             for i in range (0,len(mao)):#loop para botar as opções na tela
@@ -72,8 +70,20 @@ def decodeClnt (codigo,mao):
     elif msg[0]=='T':
         print('Ainda tem que fazer o truco')
         #caso tenha recebido a mensagem do truco
-        #print("Jogador " + msg[1] + "pediu truco. O que você faz?\n")
+        print("Jogador " + msg[1] + "pediu truco. O que você faz?\n")
         resp = input("Escolha sua ação:\n 1-RETRUCAR!!!\n 2-Aceitar\n 3-Fugir\n")
+        if int(resp) == 1 or resp.upper == 'RETRUCAR':
+            print("Voce pediu retruco")
+            encode('R',numjogador,' ')
+        elif int(resp) == 2 or resp.lower == 'aceitar':
+            print("Voce aceitou o truco do seu oponente")
+            encode('K',numjogador,' ')
+        else:
+            if int(resp) == 3 or resp.lower == 'fugir':
+                print('Voce fugiu')
+            else:
+                print('Resposta fora dos padrões, foi considerado como fugir')
+            encode('D',numjogador,' ')
         #send (T resp)
     elif msg[0]=='E':
         print("O Jogo Terminou!! Deseja Continuar Jogando? :\n S-SIM\n N-NÃO\n")
@@ -106,5 +116,7 @@ print ('conectado ao servidor')
 while 1:
     #loop de jogo
     #aguardar resposta
+    #recebido=c_sock.recv(1024)
+    #decodeClnt(recebido)
     recebido = receber(c_sock)
     decodeClnt(recebido,mao)

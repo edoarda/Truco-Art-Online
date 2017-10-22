@@ -28,7 +28,7 @@ def compara(carta1, carta2, carta3, carta4, vira):
             if valor[i] == maior:
                 indexMaior.append(i)
             if naipe[i] != "ouros" and naipe[i] != "espadas" and naipe[i] != "copas" and naipe[i] != "paus":
-                print("fudeu")
+                #se chegou aqui entao todas as cartas foram jogadas viradas pra baixo
                 naipeValor.append(0)
             if naipe[i] == "ouros":
                 naipeValor.append(1)
@@ -181,7 +181,12 @@ esperando=1
 cartas_jogadas[]
 valor_rodada=1
 while 1:
-    mao()
+    recebido=soquete.recv(1024)
+    decodeSvr(recebido.decode('utf-8'),atual,1,mao_jogadores,C_jogadas)
+    atual=atual+1
+    if atual>1:
+        atual=0#super gambiarra
+    
     #msg= ('V:%s: '% str(atual))
     #jogadores[atual].send(msg.encode('utf-8'))
     #while esperando:
@@ -190,12 +195,8 @@ while 1:
     #      opcoes=escolha[0].decode('utf-8')
 
 
-def mao():
-    mensagem=encode(V,atual)
-    broadcast(jogadores,msg)
-    while 1:
-        recebe=soquete.recv(1024)
-        M_atual=recebe.decode('utf-8')
+
+    
         
         
 

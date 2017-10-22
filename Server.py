@@ -72,18 +72,24 @@ def encode(letra,Nplayer,opt=' '):
     msg = letra+':'+Nplayer+':'+opt
     return msg
 
-def decodeSvr(codigo,numJogador,valor_rodada,mao):
+def decodeSvr(codigo,numJogador,valor_rodada,mao,C_jogadas):
     guarda=codigo.split(':',3)
     if guarda[0]== 'F' and guarda[1]==numJogador:
         msg=('o jogador %s jogou uma carta fechada'% str(guarda[1]+1))
         envio=encode('M','4',msg)
+        broadcast(jogadores,envio)
+        joga_carta(guarda[2],guarda[1],1,C_jogadas,mao)
+    elif guarda[0] == 'A' and guarda[1]==numJogador:
+        joga_carta(guarda[2],guarda[1],0,C_jogadas,mao)
+        msg=('o jogador %s jogou %s de %s'%(str(guarda[1]+1),C_jogadas[guarda[1]][0],C_jogadas[guarda[1]][1]))
+        envio=encode('M',4,msg)
         broadcast(jogadores,envio)
 
     
     if guarda[0] == 'T' and guarda[1] == numJogador:
         envio=encode(guarda[0],guarda[1])
         if (guarda[1]%2==1):
-            broacast(time2,envio)
+            broadcast(time2,envio)
         else:
             broadcast(time1,envio)
     elif guarda[2] in ['r','a','f']:#fugir
@@ -122,7 +128,12 @@ def distribui_cartas(grupo, maos, baralho):
 #    else:
 #        num=rodada()
 
-
+def jogar_carta(carta,player,tipo,lista,maos):
+    if tipo:
+        #joga uma carta fechada
+        lista[player]=('coringa','nada',0)
+    else:
+        lista[player]=maos[(player*3)+carta]
 
 #tentar criar um socket
 soquete=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
@@ -136,6 +147,7 @@ print ('soquete colocado na porta '+ str(porta) +' do local '+ hospedeiro)
 soquete.listen(4)
 jogadores = []
 mao_jogadores=[]
+C_jogadas=[(),(),(),()]
 #divisão dos jogadores em times
 time1 = []
 time2= []

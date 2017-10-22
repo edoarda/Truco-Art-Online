@@ -6,8 +6,16 @@ import socket
 
 
 def encode(letra,Nplayer,carta=' '):
-    msg = letra+':'+Nplayer+':'+carta
+    msg = letra+':'+Nplayer+':'+carta + 'Ç'
     return msg
+
+#função para pegar mensagens enviadas garantir que é só uma mensagem mesmo
+def receber(c_sock):
+    while 1:
+        msg += c_socket.recv(1024)
+        if 'Ç' in msg:
+            msg.split('Ç')
+            return msg[0]
 
 #Mensagens que podem ser recebidas pelo cliente
 # Cabeçalho M = mensagens gerais
@@ -16,6 +24,9 @@ def encode(letra,Nplayer,carta=' '):
 # Cabeçalho C = Cartas deste cliente
 # Cabeçalho T = Pedido de truco inimigo
 # Cabeçalho E = Fim do jogo
+
+### Ç: MARCADOR DE FIM DA MENSAGEM ###
+
 #Mensagens Enviadas pelo cliente
 # Cabeçalho A = Jogar carta aberta
 # Cabeçalho F = Jogar carta fechada
@@ -23,8 +34,6 @@ def encode(letra,Nplayer,carta=' '):
 # Cabeçalho K = Aceitar truco
 # Cabeçalho D = Fugir do truco
 # Cabeçalho R = Pedido Retruco
-
-
 
 def decodeClnt (codigo,mao):
     deco = codigo.decode('utf-8')
@@ -97,5 +106,5 @@ print ('conectado ao servidor')
 while 1:
     #loop de jogo
     #aguardar resposta
-    recebido=c_sock.recv(1024)
+    recebido = receber(c_sock)
     decodeClnt(recebido,mao)

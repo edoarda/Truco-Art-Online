@@ -2,8 +2,12 @@ import socket
 import sys
 import random
 
+def broadcast(grupo, msg):
+    broad = encode('M',0,msg)
+    for i in grupo:
+        i.send(broad.encode('utf-8'))
 
-#parte de comparação        
+#parte de comparação
 def compara(carta1, carta2, carta3, carta4, vira):
     valor=[carta1[2],carta2[2],carta3[2],carta4[2]]
     naipe=[carta1[1],carta2[1],carta3[1],carta4[1]]
@@ -45,7 +49,7 @@ def compara(carta1, carta2, carta3, carta4, vira):
         return indexM
 
 #fim parte de comparação de cartas
-    
+
 def cria_baralho():
     # carta, naipe, valor
     baralho = [("4", "ouros", 1), ("4", "espadas", 1), ("4", "copas", 1), ("4", "paus", 1),
@@ -66,8 +70,15 @@ def cria_baralho():
 
 #parte de codificação e decodificação de mensagens
 def encode(letra,Nplayer,opt=' '):
-    msg = letra+':'+Nplayer+':'+opt
+    msg = letra+':'+Nplayer+':'+opt + 'Ç'
     return msg
+
+def receber(atual, jogadores):
+    while 1:
+        msg += jogadores[atual].recv(1024)
+        if 'Ç' in msg:
+            msg.split('Ç')
+            return msg[0]
 
 def decodeSvr(codigo,numJogador,valor_rodada,mao,C_jogadas):
     guarda=codigo.split(':',3)
@@ -82,7 +93,7 @@ def decodeSvr(codigo,numJogador,valor_rodada,mao,C_jogadas):
         envio=encode('M',4,msg)
         broadcast(jogadores,envio)
 
-    
+
     if guarda[0] == 'T' and guarda[1] == numJogador:
         envio=encode(guarda[0],guarda[1])
         if (guarda[1]%2==1):
@@ -96,7 +107,7 @@ def decodeSvr(codigo,numJogador,valor_rodada,mao,C_jogadas):
    #     elif guarda[2]=='r'and (valor_rodada<=12):#retrucar
             #
             #
-            
+
 
 def distribui_cartas(grupo, maos, baralho):
     if len(maos)!=0:
@@ -113,10 +124,17 @@ def distribui_cartas(grupo, maos, baralho):
         #transforma as cartas em strings, para serem enviadas
         print(str(len(carta)))
         envio='C'+':'+ carta[0][0]+':'+carta[0][1]+':'+carta[1][0]+':'+carta[1][1]+':'+carta[2][0]+':'+carta[2][1]
-        grupo[j].send(envio.encode('utf-8'))      
+        grupo[j].send(envio.encode('utf-8'))
         for f in range (0,3):
             maos.append(carta.pop())
     return cartas.pop()
+
+#def mao():
+#    num=rodada()
+#    if (num==-1):
+#        return
+#    else:
+#        num=rodada()
 
 def jogar_carta(carta,player,tipo,lista,maos):
     if tipo:
@@ -124,13 +142,6 @@ def jogar_carta(carta,player,tipo,lista,maos):
         lista[player]=('coringa','nada',0)
     else:
         lista[player]=maos[(player*3)+carta]
-
-        
-def broadcast(grupo, msg):
-    texto = encode('M','0',msg)
-    for i in grupo:
-        i.send(texto.encode('utf-8'))
-
 
 #tentar criar um socket
 soquete=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
@@ -161,16 +172,16 @@ while 1:
     else:
         time2.append(addr)
     #aviso=('voce e o jogador :%d:. aguarde todos os jogadores conectarem'% i)
-    aviso=encode('N',str(i)," ")
+    aviso=encode('N',i," ")
     jogadores[i-1].send(aviso.encode('utf-8'))
-    if i==4:#alterar para jogar com o numero certo de pessoas
+    if i==2:#alterar para jogar com o numero certo de pessoas
         break
 msg='\n o jogo iniciara agora.'
 broadcast(jogadores,msg)
 baralho = cria_baralho()
 random.shuffle(baralho)
 vira = distribui_cartas(jogadores,mao_jogadores, baralho)
-msg='O vira desta mão é '+vira[0]+ ' de '+vira[1]
+msg='O vira desta mão é %s de %s'%(vira[0],vira[1])
 #jogadores[0].send(msg.encode('utf-8'))
 #jogadores[1].send(msg.encode('utf-8'))
 broadcast(jogadores,msg)
@@ -183,23 +194,17 @@ cartas_jogadas=[]
 valor_rodada=1
 while 1:
     #ta estranho mas não vou mudar o de baixo
-    texto=encode('V',str(atual))
-    print(texto)
-    jogadores[atual].send(texto.encode('utf-8'))
-    recebido=jogadores[atual].recv(1024)
+    broadcast(jogadores,encode('V',str(atual)))
+
+    recebido=receber(atual, jogadores)
     decodeSvr(recebido.decode('utf-8'),atual,1,mao_jogadores,C_jogadas)
     atual=atual+1
-    if atual>3:
-        break
+    if atual>1:
         atual=0#super gambiarra
-resp=compara(cartas_jogadas[0], cartas_jogadas[1], cartas_jogadas[2], cartas_jogadas[3], vira)
-print(resp)
 
-
-    
-        
-        
-
-   
-
-
+    #msg= ('V:%s: '% str(atual))
+    #jogadores[atual].send(msg.encode('utf-8'))
+    #while esperando:
+    #    escolha=soquete.recv(1024)
+    #   if escolha[1]== addr[atual]:
+    #      opcoes=escolha[0].decode('utf-8')

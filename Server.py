@@ -1,6 +1,7 @@
 import socket
 import sys
 import random
+from collections import deque
 
 class jogo:
 
@@ -73,7 +74,6 @@ class jogo:
                 self.resposta='x'
                 return temp
 
-
     def timeOposto(self,nmjogador):
         if nmjogador%2==0:
             return 1
@@ -92,13 +92,12 @@ class jogo:
             atual=0#super gambiarra
 
 
-
 def broadcast(grupo, msg):
     broad = encode('M',0,msg)
     for i in grupo:
         i.send(broad.encode('utf-8'))
 
-#parte de comparação        
+#parte de comparação
 def compara(carta1, carta2, carta3, carta4, vira):
     valor=[carta1[2],carta2[2],carta3[2],carta4[2]]
     naipe=[carta1[1],carta2[1],carta3[1],carta4[1]]
@@ -140,7 +139,7 @@ def compara(carta1, carta2, carta3, carta4, vira):
         return indexM
 
 #fim parte de comparação de cartas
-    
+
 def cria_baralho():
     # carta, naipe, valor
     baralho = [("4", "ouros", 1), ("4", "espadas", 1), ("4", "copas", 1), ("4", "paus", 1),
@@ -161,8 +160,13 @@ def cria_baralho():
 
 #parte de codificação e decodificação de mensagens
 def encode(letra,Nplayer,opt=' '):
-    msg = letra+':'+Nplayer+':'+opt
+    msg = letra+':'+Nplayer+':'+opt + 'Ç'
     return msg
+
+# função que vai recebendo coisas, separa bonitinho no caso do python ter sido um amorzinho e peidado nas mensagens e taca o que sobrou numa fila
+def receber(fila):
+    
+
 
 def decodeSvr(codigo,jogo):
     numJogador=jogo.atual
@@ -226,7 +230,7 @@ def decodeSvr(codigo,jogo):
    #     elif guarda[2]=='r'and (valor_rodada<=12):#retrucar
             #
             #
-            
+
 
 def distribui_cartas(grupo, maos, baralho):
     if len(maos)!=0:
@@ -243,7 +247,7 @@ def distribui_cartas(grupo, maos, baralho):
         #transforma as cartas em strings, para serem enviadas
         print(str(len(carta)))
         envio='C'+':'+ carta[0][0]+':'+carta[0][1]+':'+carta[1][0]+':'+carta[1][1]+':'+carta[2][0]+':'+carta[2][1]
-        grupo[j].send(envio.encode('utf-8'))      
+        grupo[j].send(envio.encode('utf-8'))
         for f in range (0,3):
             maos.append(carta.pop())
     return cartas.pop()
@@ -263,6 +267,9 @@ def jogar_carta(carta,player,tipo,lista,maos):
         lista[player]=maos[(player*3)+carta]
 
 #tentar criar um socket
+
+#fila de mensagens
+fila = deque()
 soquete=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 print ('soquete criado')
 #escolhe uma porta do hospedeiro pro bind
@@ -325,13 +332,3 @@ while 1:
     #    escolha=soquete.recv(1024)
     #   if escolha[1]== addr[atual]:
     #      opcoes=escolha[0].decode('utf-8')
-
-
-
-    
-        
-        
-
-   
-
-

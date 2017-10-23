@@ -31,8 +31,6 @@ def encode(letra,Nplayer,carta=' '):
 # Cabeçalho D = Fugir do truco
 # Cabeçalho R = Pedido Retruco
 
-
-
 def decodeClnt (codigo,mao):
     deco = codigo.decode('utf-8')
     msg=deco.split(':')

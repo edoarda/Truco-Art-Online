@@ -2,12 +2,103 @@ import socket
 import sys
 import random
 
+class jogo:
+
+    #var gerais
+    jogadores=[]
+    mao_jogadores=[]
+    cartas_jogadas=[]
+    inicial=0
+    atual = 0
+    time1=[]
+    time2=[]
+    mao=[]
+    vira = []
+    resposta = ['x','x']
+    baralho = []
+    #var truco
+    ult_truco=-1
+    pontuacao=0
+
+    def __init__(self,jogadores,mao,cartas_jogadas=[]):
+        self.inicial=0
+        self.atual=0
+        self.cartas_jogadas=cartas_jogadas
+
+    def divide_times(self):
+        if(jogadores.length == 4):
+            self.time1.append(jogadores[0])
+            self.time1.append(jogadores[1])
+            self.time2.append(jogadores[2])
+            self.time2.append(jogadores[3])
+        else:
+            print('faltam jogadores')
+
+    def retornaPontuacao(self,):
+        print('pensar depois')
+        return self.pontuacao
+
+    def retornaTime(self,numero):
+        for i in self.time1:
+            if numero==time1[i]:
+                return 1
+            elif numero==time2[i]:
+                return 2
+        return 0
+
+    def resp_truco(self,tipo):
+        #compara a resposta recebida
+        if self.resposta =='x':
+            #se nao houver anterior, salva e retorna 'x' indicando pra esperar segunda resposta
+            self.resposta = tipo
+            return 'x'
+        elif self.resposta == 'R':
+            #Retruco so e valido se ambos retornarem retruco
+            if tipo=='R':
+                self.resposta='x'
+                return tipo
+            else:
+                temp = self.resposta
+                self.resposta='x'
+                return temp
+        else:
+            #se outro jogador ja tiver respondido antes
+            if self.resposta == tipo:
+                #se forem iguais, zera e retorna
+                self.resposta='x'
+                return tipo
+            else:
+                #se forem diferentes retorna a que ja estava e zera a variavel
+                temp = self.resposta
+                self.resposta='x'
+                return temp
+
+
+    def timeOposto(self,nmjogador):
+        if nmjogador%2==0:
+            return 1
+        else:
+            return 2
+
+    def timeJogador(self,nmjogador):
+        if nmjogador%2==0:
+            return 2
+        else:
+            return 1
+
+    def proxJogador(self):
+        self.atual=self.atual+1
+        if self.atual>4:
+            atual=0#super gambiarra
+
+
+
 def broadcast(grupo, msg):
     broad = encode('M',0,msg)
     for i in grupo:
         i.send(broad.encode('utf-8'))
 
-#parte de comparação
+#parte de comparação        
 def compara(carta1, carta2, carta3, carta4, vira):
     valor=[carta1[2],carta2[2],carta3[2],carta4[2]]
     naipe=[carta1[1],carta2[1],carta3[1],carta4[1]]
@@ -49,7 +140,7 @@ def compara(carta1, carta2, carta3, carta4, vira):
         return indexM
 
 #fim parte de comparação de cartas
-
+    
 def cria_baralho():
     # carta, naipe, valor
     baralho = [("4", "ouros", 1), ("4", "espadas", 1), ("4", "copas", 1), ("4", "paus", 1),
@@ -70,37 +161,64 @@ def cria_baralho():
 
 #parte de codificação e decodificação de mensagens
 def encode(letra,Nplayer,opt=' '):
-    msg = letra+':'+Nplayer+':'+opt + 'Ç'
+    msg = letra+':'+Nplayer+':'+opt
     return msg
 
-def receber(atual, jogadores):
-    msg = ''
-    while 1:
-        msg += jogadores[atual].recv(1024)
-        if 'Ç' in msg:
-            msg.split('Ç')
-            return msg[0]
-
-def decodeSvr(codigo,numJogador,valor_rodada,mao,C_jogadas):
+def decodeSvr(codigo,jogo):
+    numJogador=jogo.atual
     guarda=codigo.split(':',3)
-    if guarda[0]== 'F' and guarda[1]==numJogador:
-        msg=('o jogador %s jogou uma carta fechada'% str(guarda[1]+1))
-        envio=encode('M','4',msg)
-        broadcast(jogadores,envio)
-        jogar_carta(guarda[2],guarda[1],1,C_jogadas,mao)
-    elif guarda[0] == 'A' and guarda[1]==numJogador:
-        jogar_carta(guarda[2],guarda[1],0,C_jogadas,mao)
-        msg=('o jogador %s jogou %s de %s'%(str(guarda[1]+1),C_jogadas[guarda[1]][0],C_jogadas[guarda[1]][1]))
-        envio=encode('M',4,msg)
-        broadcast(jogadores,envio)
-
-
-    if guarda[0] == 'T' and guarda[1] == numJogador:
-        envio=encode(guarda[0],guarda[1])
-        if (guarda[1]%2==1):
-            broadcast(time2,envio)
+    if guarda[1]==numJogador:
+        if guarda[0]== 'F':
+            msg=('o jogador %s jogou uma carta fechada'% str(guarda[1]+1))
+            envio=encode('M','4',msg)
+            broadcast(jogadores,envio)
+            jogar_carta(guarda[2],guarda[1],1,C_jogadas,jogo.mao)
+        elif guarda[0] == 'A':
+            jogar_carta(guarda[2],guarda[1],0,C_jogadas,jogo.mao)
+            msg=('o jogador %s jogou %s de %s'%(str(guarda[1]+1),C_jogadas[guarda[1]][0],C_jogadas[guarda[1]][1]))
+            envio=encode('M',4,msg)
+            broadcast(jogadores,envio)
+        elif guarda[0] == 'T':
+            if jogo.pontuacao>12 or jogo.ult_truco == guarda[1]:
+                notifica = encode('X',numJogador)
+                jogadores[numJogador] = notifica.encode('utf-8')
+            else:
+                ult_truco = guarda[1]
+                envio=encode(guarda[0],guarda[1])
+                if (guarda[1]%2==1):
+                    broadcast(time2,envio)
+                else:
+                    broadcast(time1,envio)
+    else:
+        if guarda[0]== 'K' or guarda[0]== 'D' or guarda[0]== 'R':
+            respt = jogo.resposta('K')
+            if respt == 'K':
+                mensagem_aceita = encode('M',4,'Truco do time '+jogo.timeOposto(numJogador)+' aceito')
+                broadcast(jogo.jogadores,mensagem_aceita)
+            elif respt == 'D':
+                mensagem_aceita = encode('M',4,'Time '+jogo.timeJogador(numJogador)+' fugiu')
+                broadcast(jogo.jogadores,mensagem_aceita)
+            elif respt== 'R':
+                #if jogo.ult_truco == jogo.retornaTime(numJogador):
+                mensagem_aceita = encode('T',numJogador,'Time '+jogo.timeJogador(numJogador)+' pediu Retruco')
+                #gambiarra
+                if jogo.timeJogador(numJogador) == 1:
+                    broadcast(jogo.time2,mensagem_aceita)
+                else:
+                    broadcast(jogo.time1,mensagem_aceita)
+            else:
+                mensagem_aceita = encode('M',4,'Aguardando resposta dos oponentes')
+                broadcast(jogo.jogadores,mensagem_aceita)
         else:
-            broadcast(time1,envio)
+            #enviar mensagem pro jogador da vez que veio errado e dar a vez de novo
+            print('falta')
+
+
+
+
+
+
+
     #elif guarda[2] in ['r','a','f']:#fugir
     #    if guarda[2]=='f':
             #arrumar um meio de declarar derrota da dupla que fugiu
@@ -108,7 +226,7 @@ def decodeSvr(codigo,numJogador,valor_rodada,mao,C_jogadas):
    #     elif guarda[2]=='r'and (valor_rodada<=12):#retrucar
             #
             #
-
+            
 
 def distribui_cartas(grupo, maos, baralho):
     if len(maos)!=0:
@@ -125,7 +243,7 @@ def distribui_cartas(grupo, maos, baralho):
         #transforma as cartas em strings, para serem enviadas
         print(str(len(carta)))
         envio='C'+':'+ carta[0][0]+':'+carta[0][1]+':'+carta[1][0]+':'+carta[1][1]+':'+carta[2][0]+':'+carta[2][1]
-        grupo[j].send(envio.encode('utf-8'))
+        grupo[j].send(envio.encode('utf-8'))      
         for f in range (0,3):
             maos.append(carta.pop())
     return cartas.pop()
@@ -154,6 +272,7 @@ soquete.bind((hospedeiro,porta))
 print ('soquete colocado na porta '+ str(porta) +' do local '+ hospedeiro)
 #precisamos esperar os 4 jogadores
 soquete.listen(4)
+newGame = jogo()
 jogadores = []
 mao_jogadores=[]
 C_jogadas=[(),(),(),()]
@@ -168,40 +287,37 @@ while 1:
     print ('o cliente %s parece ter conectado'%str(addr[0]))
     jogadores.append(Scliente)#para mensagens gerais
     i=i+1
+    jogo.jogadores.append(addr)
     if i%2==1:#separa os jogadores em duplas pra facilitar comunicação
-        time1.append(addr)
+        jogo.time1.append(addr)
     else:
-        time2.append(addr)
+        jogo.time2.append(addr)
     #aviso=('voce e o jogador :%d:. aguarde todos os jogadores conectarem'% i)
     aviso=encode('N',i," ")
-    jogadores[i-1].send(aviso.encode('utf-8'))
+    jogo.jogadores[i-1].send(aviso.encode('utf-8'))
     if i==2:#alterar para jogar com o numero certo de pessoas
         break
 msg='\n o jogo iniciara agora.'
-broadcast(jogadores,msg)
-baralho = cria_baralho()
-random.shuffle(baralho)
-vira = distribui_cartas(jogadores,mao_jogadores, baralho)
+broadcast(jogo.jogadores,msg)
+jogo.baralho = cria_baralho()
+jogo.baralho=random.shuffle(jogo.baralho)
+vira = distribui_cartas(jogadores,mao_jogadores, jogo.baralho)
+jogo.vira=[vira[0],vira[1]]
 msg='O vira desta mão é %s de %s'%(vira[0],vira[1])
 #jogadores[0].send(msg.encode('utf-8'))
 #jogadores[1].send(msg.encode('utf-8'))
-broadcast(jogadores,msg)
+#jogadores[0].send(encode('M',0,msg))
+broadcast(jogo.jogadores,msg)
 
 #a partir daqui, devem ser pedidas as entradas especificas de cada jogador
-inicial=0#jogador que vai começar a mão
-atual=0#jogador da vez
-esperando=1
-cartas_jogadas=[]
-valor_rodada=1
+
 while 1:
     #ta estranho mas não vou mudar o de baixo
-    broadcast(jogadores,encode('V',str(atual)))
+    broadcast(jogadores,encode('V',str(jogo.atual)))
 
-    recebido=receber(atual, jogadores)
-    decodeSvr(recebido.decode('utf-8'),atual,1,mao_jogadores,C_jogadas)
-    atual=atual+1
-    if atual>1:
-        atual=0#super gambiarra
+    recebido=jogadores[jogo.atual].recv(1024)
+    decodeSvr(recebido.decode('utf-8'),jogo)
+    jogo.proxJogador()
 
     #msg= ('V:%s: '% str(atual))
     #jogadores[atual].send(msg.encode('utf-8'))
@@ -209,3 +325,13 @@ while 1:
     #    escolha=soquete.recv(1024)
     #   if escolha[1]== addr[atual]:
     #      opcoes=escolha[0].decode('utf-8')
+
+
+
+    
+        
+        
+
+   
+
+

@@ -21,10 +21,10 @@ class jogo:
     ult_truco=-1
     pontuacao=0
 
-    def __init__(self,jogadores,mao,cartas_jogadas=[]):
+    def __init__(self,jogadores=[],mao=[],C_jogadas=[(),(),(),()]):
         self.inicial=0
         self.atual=0
-        self.cartas_jogadas=cartas_jogadas
+        self.cartas_jogadas=C_jogadas
 
     def divide_times(self):
         if(self.jogadores.length == 4):
@@ -290,7 +290,7 @@ soquete.listen(4)
 
 #jogadores = []
 #mao_jogadores=[]
-#C_jogadas=[(),(),(),()]
+
 #actualGame = jogo(jogadores, mao_jogadores, C_jogadas)
 #divisão dos jogadores em times
 #time1 = []
@@ -301,7 +301,7 @@ i=0
 while 1:
     #O servidor fica aguardando as conexoes aqui
     Scliente, addr=soquete.accept()
-    print ('o cliente %s parece ter conectado'%str(addr[0]))
+    print ('o cliente %s parece ter conectado'%str(addr[i]))
     #jogadores.append(Scliente)#para mensagens gerais
     i=i+1
     actualGame.jogadores.append(Scliente)
@@ -310,7 +310,7 @@ while 1:
     else:
         actualGame.time2.append(Scliente)
     #aviso=('voce e o jogador :%d:. aguarde todos os jogadores conectarem'% i)
-    aviso=encode('N',str(i)," ")
+    aviso=encode('N',str(i))
     actualGame.jogadores[i - 1].send(aviso.encode('utf-8'))
     if i==2:#alterar para jogar com o numero certo de pessoas
         break
@@ -331,6 +331,7 @@ broadcast(actualGame.jogadores, msg)
 while 1:
     #ta estranho mas não vou mudar o de baixo
     print('cheguei')
+    print('actualGame.atual')
     broadcast(actualGame.jogadores, encode('V', str(actualGame.atual)))
     print('ate aqui')
     recebido=actualGame.jogadores[actualGame.atual].recv(1024)

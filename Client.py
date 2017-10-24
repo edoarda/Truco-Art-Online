@@ -57,12 +57,11 @@ def encode(letra,Nplayer,carta=' '):
 def decodeClnt (deco,mao):
     #deco = codigo.decode('utf-8')
     msg=deco.split(':')
-
-    if msg[0]=='M':
-        print(msg[2])
-    elif msg[0]=='N':
+    if msg[0]=='N':
         numero = msg[1]
-        print ('Você é o jogador :%d:'%numero)
+        print ('Você é o jogador :%s:'%numero)
+    elif msg[0]=='M':
+        print(msg[2])
     elif msg[0]=='V':
         print('É a sua vez')
         print("Escolha sua ação:\n 1-Jogar carta aberta\n 2-Jogar carta fechada\n 3-Pedir truco\n")

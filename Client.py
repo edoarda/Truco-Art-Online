@@ -4,38 +4,39 @@ import socket
 
 #funçoes implementadas
 
+#função para pegar mensagens enviadas garantir que é só uma mensagem mesmo
 # função que vai recebendo coisas, separa bonitinho no caso do python ter sido um amorzinho e peidado nas mensagens e taca o que sobrou numa fila
-#msgs terminam com @Ç
-def receber(soquete, fila):
-    msg = ""
-    if len(fila) != 0:
-        try:
-            msg = fila.pop()
-            if '@' in msg: # msg tem fim. yay!
-                msg = msg.split('@')
-                return msg[0]
-        # se fila.pop() soltar IndexError, é pq não tem uma msg completa na fila e é pra ouvir mensagens
-        except IndexError:
-            fila.append(msg)
-            msg = ""
-            #sair de tudo e ir pro while dali de baixo
+ #msgs terminam com @Ç
+ def receber(soquete, fila):
+     msg = ""
+     if len(fila) != 0:
+         try:
+             msg = fila.pop()
+             if '@' in msg: # msg tem fim. yay!
+                 msg = msg.split('@')
+                 return msg[0]
+         # se fila.pop() soltar IndexError, é pq não tem uma msg completa na fila e é pra ouvir mensagens
+         except IndexError:
+             fila.append(msg)
+             msg = ""
+             #sair de tudo e ir pro while dali de baixo
 
-    #caso não tenha uma mensagem terminada na fila
+     #caso não tenha uma mensagem terminada na fila
     while 1:
         #é pra dar listen no sockete aqui
-        #msg += "poneifeliz@Çbatat@ÇcacetepululuanteçAAAAA"
-        msg += soquete.recv(1024).decode('utf-8')
-        if 'Ç' in msg:
-            msg = msg.split('Ç')
-            # dá append na fila a todas as mensagens com o @ no final pra gente saber que aquilo é uma msg inteira
-            for i in range (1, len(msg)):
-                fila.append(msg[i])
-            # tira o @ da msg[0] e retorna
-            msg = msg[0].split('@')
-            return msg[0]
+         #msg += "poneifeliz@Çbatat@ÇcacetepululuanteçAAAAA"
+         msg += soquete.recv(1024).decode('utf-8')
+         if 'Ç' in msg:
+             msg = msg.split('Ç')
+             # dá append na fila a todas as mensagens com o @ no final pra gente saber que aquilo é uma msg inteira
+             for i in range (1, len(msg)):
+                 fila.append(msg[i])
+             # tira o @ da msg[0] e retorna
+             msg = msg[0].split('@')
+             return msg[0]
 
 def encode(letra,Nplayer,carta=' '):
-    msg = letra+':'+Nplayer+':'+carta + '@Ç'
+    msg = letra+':'+Nplayer+':'+carta + 'Ç'
     return msg
 
 #Mensagens que podem ser recebidas pelo cliente
@@ -139,4 +140,5 @@ while 1:
     recebido=c_sock.recv(1024)
     #decodeClnt(recebido)
     recebido = receber(recebido,c_sock)
+    print(type(recebido))
     decodeClnt(recebido,mao)

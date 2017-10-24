@@ -93,7 +93,7 @@ class jogo:
 
 
 def broadcast(grupo, msg):
-    broad = encode('M',0,msg)
+    broad = encode('M','0',msg)
     for i in grupo:
         i.send(broad.encode('utf-8'))
 
@@ -164,36 +164,36 @@ def encode(letra,Nplayer,opt=' '):
     return msg
 
 # função que vai recebendo coisas, separa bonitinho no caso do python ter sido um amorzinho e peidado nas mensagens e taca o que sobrou numa fila
+# função que vai recebendo coisas, separa bonitinho no caso do python ter sido um amorzinho e peidado nas mensagens e taca o que sobrou numa fila
+ #msgs terminam com @Ç
 #msgs terminam com @Ç
 def receber(soquete, fila):
-    msg = ""
-    if len(fila) != 0:
+     msg = ""
+     if len(fila) != 0:
         try:
             msg = fila.pop()
             if '@' in msg: # msg tem fim. yay!
                 msg = msg.split('@')
                 return msg[0]
-        # se fila.pop() soltar IndexError, é pq não tem uma msg completa na fila e é pra ouvir mensagens
+         # se fila.pop() soltar IndexError, é pq não tem uma msg completa na fila e é pra ouvir mensagens
         except IndexError:
-            fila.append(msg)
-            msg = ""
-            #sair de tudo e ir pro while dali de baixo
+             fila.append(msg)
+             msg = ""
+             #sair de tudo e ir pro while dali de baixo
 
-    #caso não tenha uma mensagem terminada na fila
-    while 1:
-        #é pra dar listen no sockete aqui
-        #msg += "poneifeliz@Çbatat@ÇcacetepululuanteçAAAAA"
-        msg += soquete.recv(1024).decode('utf-8')
-        if 'Ç' in msg:
-            msg = msg.split('Ç')
-            # dá append na fila a todas as mensagens com o @ no final pra gente saber que aquilo é uma msg inteira
-            for i in range (1, len(msg)):
-                fila.append(msg[i])
-            # tira o @ da msg[0] e retorna
-            msg = msg[0].split('@')
-            return msg[0]
-
-
+     #caso não tenha uma mensagem terminada na fila
+     while 1:
+         #é pra dar listen no sockete aqui
+         #msg += "poneifeliz@Çbatat@ÇcacetepululuanteçAAAAA"
+         msg += soquete.recv(1024).decode('utf-8')
+         if 'Ç' in msg:
+             msg = msg.split('Ç')
+             # dá append na fila a todas as mensagens com o @ no final pra gente saber que aquilo é uma msg inteira
+             for i in range (1, len(msg)):
+                 fila.append(msg[i])
+             # tira o @ da msg[0] e retorna
+             msg = msg[0].split('@')
+             return msg[0]
 
 def decodeSvr(codigo,jogo):
     numJogador=jogo.atual
@@ -246,19 +246,6 @@ def decodeSvr(codigo,jogo):
 
 
 
-
-
-
-
-    #elif guarda[2] in ['r','a','f']:#fugir
-    #    if guarda[2]=='f':
-            #arrumar um meio de declarar derrota da dupla que fugiu
-            #e começar uma nova mão
-   #     elif guarda[2]=='r'and (valor_rodada<=12):#retrucar
-            #
-            #
-
-
 def distribui_cartas(grupo, maos, baralho):
     if len(maos)!=0:
         for p in range(0, len(maos)):
@@ -272,19 +259,13 @@ def distribui_cartas(grupo, maos, baralho):
         for k in range(0,3):
             carta.append(cartas.pop())
         #transforma as cartas em strings, para serem enviadas
-        print(str(len(carta)))
+        print(str(len(grupo)))
         envio='C'+':'+ carta[0][0]+':'+carta[0][1]+':'+carta[1][0]+':'+carta[1][1]+':'+carta[2][0]+':'+carta[2][1]
         grupo[j].send(envio.encode('utf-8'))
         for f in range (0,3):
             maos.append(carta.pop())
     return cartas.pop()
 
-#def mao():
-#    num=rodada()
-#    if (num==-1):
-#        return
-#    else:
-#        num=rodada()
 
 def jogar_carta(carta,player,tipo,lista,maos):
     if tipo:
@@ -306,10 +287,11 @@ soquete.bind((hospedeiro,porta))
 print ('soquete colocado na porta '+ str(porta) +' do local '+ hospedeiro)
 #precisamos esperar os 4 jogadores
 soquete.listen(4)
-newGame = jogo()
+
 jogadores = []
 mao_jogadores=[]
 C_jogadas=[(),(),(),()]
+newGame = jogo(jogadores,mao_jogadores,C_jogadas)
 #divisão dos jogadores em times
 time1 = []
 time2= []
@@ -319,23 +301,24 @@ while 1:
     #O servidor fica aguardando as conexoes aqui
     Scliente, addr=soquete.accept()
     print ('o cliente %s parece ter conectado'%str(addr[0]))
-    jogadores.append(Scliente)#para mensagens gerais
+    #jogadores.append(Scliente)#para mensagens gerais
     i=i+1
-    jogo.jogadores.append(addr)
+    jogo.jogadores.append(Scliente)
     if i%2==1:#separa os jogadores em duplas pra facilitar comunicação
-        jogo.time1.append(addr)
+        jogo.time1.append(Scliente)
     else:
-        jogo.time2.append(addr)
+        jogo.time2.append(Scliente)
     #aviso=('voce e o jogador :%d:. aguarde todos os jogadores conectarem'% i)
-    aviso=encode('N',i," ")
+    aviso=encode('N',str(i)," ")
     jogo.jogadores[i-1].send(aviso.encode('utf-8'))
     if i==2:#alterar para jogar com o numero certo de pessoas
         break
 msg='\n o jogo iniciara agora.'
 broadcast(jogo.jogadores,msg)
 jogo.baralho = cria_baralho()
-jogo.baralho=random.shuffle(jogo.baralho)
-vira = distribui_cartas(jogadores,mao_jogadores, jogo.baralho)
+random.shuffle(jogo.baralho)
+print(jogo.baralho)
+vira = distribui_cartas(jogo.jogadores,jogo.mao_jogadores, jogo.baralho)
 jogo.vira=[vira[0],vira[1]]
 msg='O vira desta mão é %s de %s'%(vira[0],vira[1])
 #jogadores[0].send(msg.encode('utf-8'))

@@ -61,8 +61,8 @@ def decodeClnt (deco,mao,numjogador):
     #deco = codigo.decode('utf-8')
     msg=deco.split(':')
     if msg[0]=='N':
-        numjogador = msg[1]
-        print ('Você é o jogador :%s:'%numjogador)
+        numjogador.append(msg[1])
+        print ('Você é o jogador :%s:'%numjogador[0])
     elif msg[0]=='M':
         print(msg[2])
     elif msg[0]=='V':
@@ -75,16 +75,14 @@ def decodeClnt (deco,mao,numjogador):
                 print('%s- %s de %s '% (str(i), mao[i][0], mao[i][1]))
             resp2=input("responda com o numero correspondente a carta escolhida")
             opcao=mao.pop(int(resp2))
-            msg=encode('A',str(numjogador),resp2)
-            print('A',numjogador,resp2)
+            msg=encode('A',str(numjogador[0]),resp2)
         if int(resp)==2:
             print ('Escolha a carta a ser jogada:')
             for i in range (0,len(mao)):#loop para botar as opções na tela
                 print('%s- %s de %s '% (str(i), mao[i][0], mao[i][1]))
             resp2=input("responda com o numero correspondente a carta escolhida")
             opcao=mao.pop(int(resp2))
-            msg=encode('F',numjogador,resp2)
-            print('F',numjogador,resp2)
+            msg=encode('F',str(numjogador[0]),resp2)
         c_sock.send(msg.encode('utf-8'))
     elif msg[0]=='W':
         #Receber as cartas e salvar
@@ -102,13 +100,13 @@ def decodeClnt (deco,mao,numjogador):
             encode('R',numjogador,' ')
         elif int(resp) == 2 or resp.lower == 'aceitar':
             print("Voce aceitou o truco do seu oponente")
-            encode('K',numjogador,' ')
+            encode('K',numjogador[0],' ')
         else:
             if int(resp) == 3 or resp.lower == 'fugir':
                 print('Voce fugiu')
             else:
                 print('Resposta fora dos padrões, foi considerado como fugir')
-            encode('D',numjogador,' ')
+            encode('D',numjogador[0],' ')
         #send (T resp)
     elif msg[0]=='E':
         print("O Jogo Terminou!! Deseja Continuar Jogando? :\n S-SIM\n N-NÃO\n")
@@ -132,7 +130,7 @@ print ('soquete criado')
 destino=sys.argv[1]
 porta=int(sys.argv[2])
 mao=[]
-numjogador=-1
+numjogador=[]
 fila=[]
 print ('tentando acessar a porta '+ str(porta) +' do local '+ destino)
 #precisamos esperar os 4 jogadores

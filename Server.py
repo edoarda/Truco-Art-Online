@@ -21,10 +21,10 @@ class jogo:
     ult_truco=-1
     pontuacao=0
 
-    def __init__(self,C_jogadas=[(),(),(),()]):
+    def __init__(self,C_jogadas=[(),(),("4", "espadas", 1),("5", "copas", 2)]):
         self.inicial=0
         self.atual=0
-        self.cartas_jogadas=C_jogadas
+        self.Cartas_jogadas=C_jogadas
 
     def divide_times(self):
         if(self.jogadores.length == 4):
@@ -174,22 +174,23 @@ def encode(letra,Nplayer,opt='lixo'):
 def receber(soquete, fila):
      msg = ""
      if len(fila) != 0:
-        try:
-            msg = fila.pop()
-            if '@' in msg: # msg tem fim. yay!
-                msg = msg.split('@')
-                return msg[0]
+         try:
+             msg = fila.pop()
+             if '@' in msg: # msg tem fim. yay!
+                 msg = msg.split('@')
+                 print(fila)
+                 return msg[0]
          # se fila.pop() soltar IndexError, é pq não tem uma msg completa na fila e é pra ouvir mensagens
-        except IndexError:
+         except IndexError:
              fila.append(msg)
              msg = ""
              #sair de tudo e ir pro while dali de baixo
 
      #caso não tenha uma mensagem terminada na fila
      while 1:
-         #é pra dar listen no sockete aqui
+        #é pra dar listen no sockete aqui
          #msg += "poneifeliz@Çbatat@ÇcacetepululuanteçAAAAA"
-         msg += soquete.recv(8192).decode('utf-8')
+         msg += soquete.recv(1024).decode('utf-8')
          if 'Ç' in msg:
              msg = msg.split('Ç')
              # dá append na fila a todas as mensagens com o @ no final pra gente saber que aquilo é uma msg inteira
@@ -197,22 +198,22 @@ def receber(soquete, fila):
                  fila.append(msg[i])
              # tira o @ da msg[0] e retorna
              msg = msg[0].split('@')
+             print(msg)
+             print(fila)
              return msg[0]
 
 def decodeSvr(codigo,jogo):
     numJogador=jogo.atual
-    guarda=codigo.split(':',3)
-    if guarda[1]==numJogador:
+    guarda=codigo.split(':')
+    if guarda[1]==str(numJogador):
         if guarda[0]== 'F':
-            msg=('o jogador %s jogou uma carta fechada'% str(guarda[1]+1))
-            envio=encode('M','4',msg)
-            broadcast(jogo.jogadores,envio)
-            jogar_carta(guarda[2],guarda[1],1,jogo.C_jogadas,jogo.mao)
+            msg=('o jogador %s jogou uma carta fechada'% str(guarda[1]))
+            broadcast(jogo.jogadores,msg)
+            jogar_carta(guarda[2],guarda[1],1,jogo.Cartas_jogadas,jogo.mao)
         elif guarda[0] == 'A':
-            jogar_carta(guarda[2],guarda[1],0,jogo.C_jogadas,jogo.mao)
-            msg=('o jogador %s jogou %s de %s'%(str(guarda[1]+1),jogo.C_jogadas[guarda[1]][0],jogo.C_jogadas[guarda[1]][1]))
-            envio=encode('M',4,msg)
-            broadcast(jogo.jogadores,envio)
+            jogar_carta(guarda[2],guarda[1],0,jogo.Cartas_jogadas,jogo.mao_jogadores)
+            msg=('o jogador %s jogou %s de %s'%(str(guarda[1]),str(jogo.Cartas_jogadas[int(guarda[1])][0]),str(jogo.Cartas_jogadas[int(guarda[1])][1])))
+            broadcast(jogo.jogadores,msg)
         elif guarda[0] == 'T':
             if jogo.pontuacao>12 or jogo.ult_truco == guarda[1]:
                 notifica = encode('X',numJogador)
@@ -270,21 +271,23 @@ def distribui_cartas(grupo, maos, baralho):
         env=grupo[j].sendall(envio.encode('utf-8'))
         print(env)
         for f in range (0,3):
-            maos.append(carta.pop())
-    return cartas.pop()
+            maos.append(carta.pop(0))
+    print(maos)
+    return [maos, cartas.pop()]
 
 
 def jogar_carta(carta,player,tipo,lista,maos):
     if tipo:
         #joga uma carta fechada
-        lista[player]=('coringa','nada',0)
+        lista[int(player)]=('coringa','nada',0)
     else:
-        lista[player]=maos[(player*3)+carta]
+        print(player)
+        lista[int(player)]=maos[(int(player)*3)+int(carta)]
 
 #tentar criar um socket
 
 #fila de mensagens
-fila = deque()
+fila =[]
 soquete=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 print ('soquete criado')
 #escolhe uma porta do hospedeiro pro bind
@@ -328,7 +331,8 @@ msg='\n o jogo iniciara agora.'
 broadcast(actualGame.jogadores, msg)
 actualGame.baralho = cria_baralho()
 random.shuffle(actualGame.baralho)
-vira = distribui_cartas(actualGame.jogadores, actualGame.mao_jogadores, actualGame.baralho)
+actualGame.mao_jogadores,vira = distribui_cartas(actualGame.jogadores, actualGame.mao_jogadores, actualGame.baralho)
+print(actualGame.mao_jogadores)
 actualGame.vira=[vira[0], vira[1]]
 msg='O vira desta mão é %s de %s'%(vira[0],vira[1])
 print('aguardando um momento')
@@ -341,17 +345,21 @@ broadcast(actualGame.jogadores, msg)
 
 while 1:
     #ta estranho mas não vou mudar o de baixo
-    print('cheguei')
-    print(actualGame.atual)
+
     #broadcast(actualGame.jogadores, encode('V', str(actualGame.atual)))
     notificacao = 'É a vez de %s'%actualGame.atual
     broadcast(actualGame.jogadores,notificacao)
     notif=encode('V',str(actualGame.atual)).encode('utf-8')
     actualGame.jogadores[actualGame.atual].sendall(notif)
-    print('ate aqui')
-    recebido=actualGame.jogadores[actualGame.atual].recv(8192)
-    decodeSvr(recebido.decode('utf-8'), actualGame)
+    #recebido=actualGame.jogadores[actualGame.atual].recv(8192)
+    recebido=receber(actualGame.jogadores[actualGame.atual],fila)
+    decodeSvr(recebido, actualGame)
     actualGame.proxJogador()
+    if actualGame.atual==2:
+        break
+print(actualGame.Cartas_jogadas)
+resp=compara(actualGame.Cartas_jogadas[0],actualGame.Cartas_jogadas[1],actualGame.Cartas_jogadas[2],actualGame.Cartas_jogadas[3],vira)
+print(resp)
 
     #msg= ('V:%s: '% str(atual))
     #jogadores[atual].send(msg.encode('utf-8'))

@@ -25,7 +25,7 @@ def receber(soquete, fila):
      while 1:
         #é pra dar listen no sockete aqui
          #msg += "poneifeliz@Çbatat@ÇcacetepululuanteçAAAAA"
-         msg += soquete.recv(1024).decode('utf-8')
+         msg += soquete.recv(8192).decode('utf-8')
          if 'Ç' in msg:
              msg = msg.split('Ç')
              # dá append na fila a todas as mensagens com o @ no final pra gente saber que aquilo é uma msg inteira
@@ -33,6 +33,7 @@ def receber(soquete, fila):
                  fila.append(msg[i])
              # tira o @ da msg[0] e retorna
              msg = msg[0].split('@')
+             print(msg)
              return msg[0]
 
 def encode(letra,Nplayer,carta=' '):
@@ -73,6 +74,7 @@ def decodeClnt (deco,mao):
             resp2=input("responda com o numero correspondente a carta escolhida")
             opcao=mao.pop(int(resp2) - 1)
             msg=encode('A',numjogador,(resp2-1))
+            print('A',numjogador,(resp2-1))
         if int(resp)==2:
             print ('Escolha a carta a ser jogada:')
             for i in range (0,len(mao)):#loop para botar as opções na tela
@@ -80,8 +82,9 @@ def decodeClnt (deco,mao):
             resp2=input("responda com o numero correspondente a carta escolhida")
             opcao=mao.pop(int(resp2) - 1)
             msg=encode('F',numjogador,(resp2-1))
+            print('F',numjogador,(resp2-1))
         c_sock.send(msg.encode('utf-8'))
-    elif msg[0]=='C':
+    elif msg[0]=='W':
         #Receber as cartas e salvar
         for i in range(1,7,2):
             carta=(msg[i],msg[i+1])
@@ -135,11 +138,11 @@ c_sock.connect((destino,porta))
 print ('conectado ao servidor')
 
 while 1:
+    print(fila)
     #loop de jogo
     #aguardar resposta
-    recebido=c_sock.recv(1024)
+    recebido=c_sock.recv(8192)
     #decodeClnt(recebido)
     recebido = receber(c_sock,fila)
-    print(type(recebido))
     decodeClnt(recebido,mao)
     print('Terminando loop')

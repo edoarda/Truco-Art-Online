@@ -160,7 +160,7 @@ def cria_baralho():
 
 #parte de codificação e decodificação de mensagens
 def encode(letra,Nplayer,opt=' '):
-    msg = letra+':'+Nplayer+':'+opt + '@Ç'
+    msg = letra+':'+Nplayer+':'+opt +'@Ç'
     return msg
 
 # função que vai recebendo coisas, separa bonitinho no caso do python ter sido um amorzinho e peidado nas mensagens e taca o que sobrou numa fila
@@ -185,7 +185,7 @@ def receber(soquete, fila):
      while 1:
          #é pra dar listen no sockete aqui
          #msg += "poneifeliz@Çbatat@ÇcacetepululuanteçAAAAA"
-         msg += soquete.recv(1024).decode('utf-8')
+         msg += soquete.recv(8192).decode('utf-8')
          if 'Ç' in msg:
              msg = msg.split('Ç')
              # dá append na fila a todas as mensagens com o @ no final pra gente saber que aquilo é uma msg inteira
@@ -259,9 +259,12 @@ def distribui_cartas(grupo, maos, baralho):
         for k in range(0,3):
             carta.append(cartas.pop())
         #transforma as cartas em strings, para serem enviadas
-        print(str(len(grupo)))
-        envio='C'+':'+ carta[0][0]+':'+carta[0][1]+':'+carta[1][0]+':'+carta[1][1]+':'+carta[2][0]+':'+carta[2][1]
-        grupo[j].send(envio.encode('utf-8'))
+        print(str(len(carta)))
+        envio=encode('W',str(j),carta[0][0]+':'+carta[0][1]+':'+carta[1][0]+':'+carta[1][1]+':'+carta[2][0]+':'+carta[2][1])
+        print(envio)
+        print(sys.getsizeof(envio))
+        env=grupo[j].sendall(envio.encode('utf-8'))
+        print(env)
         for f in range (0,3):
             maos.append(carta.pop())
     return cartas.pop()
@@ -305,13 +308,14 @@ while 1:
     #jogadores.append(Scliente)#para mensagens gerais
     i=i+1
     actualGame.jogadores.append(Scliente)
+    aviso=encode('N',str(i))
+    actualGame.jogadores[0].send(aviso.encode('utf-8'))
     if i%2==1:#separa os jogadores em duplas pra facilitar comunicação
         actualGame.time1.append(Scliente)
     else:
         actualGame.time2.append(Scliente)
     #aviso=('voce e o jogador :%d:. aguarde todos os jogadores conectarem'% i)
-    aviso=encode('N',str(i))
-    actualGame.jogadores[i - 1].send(aviso.encode('utf-8'))
+
     if i==2:#alterar para jogar com o numero certo de pessoas
         break
 msg='\n o jogo iniciara agora.'
@@ -321,6 +325,7 @@ random.shuffle(actualGame.baralho)
 vira = distribui_cartas(actualGame.jogadores, actualGame.mao_jogadores, actualGame.baralho)
 actualGame.vira=[vira[0], vira[1]]
 msg='O vira desta mão é %s de %s'%(vira[0],vira[1])
+print('aguardando um momento')
 #jogadores[0].send(msg.encode('utf-8'))
 #jogadores[1].send(msg.encode('utf-8'))
 #jogadores[0].send(encode('M',0,msg))
@@ -331,19 +336,20 @@ broadcast(actualGame.jogadores, msg)
 while 1:
     #ta estranho mas não vou mudar o de baixo
     print('cheguei')
-    print('actualGame.atual')
+    print(actualGame.atual)
     #broadcast(actualGame.jogadores, encode('V', str(actualGame.atual)))
-    notificacao = 'É a vez de %i'%actualGame.atual
+    notificacao = 'É a vez de %s'%actualGame.atual
     broadcast(actualGame.jogadores,notificacao)
-    actualGame.jogadores[actualGame.atual].send(encode('V',actualGame.atual))
+    notif=encode('V',str(actualGame.atual)).encode('utf-8')
+    actualGame.jogadores[actualGame.atual].send(notif)
     print('ate aqui')
-    recebido=actualGame.jogadores[actualGame.atual].recv(1024)
+    recebido=actualGame.jogadores[actualGame.atual].recv(8192)
     decodeSvr(recebido.decode('utf-8'), actualGame)
     actualGame.proxJogador()
 
     #msg= ('V:%s: '% str(atual))
     #jogadores[atual].send(msg.encode('utf-8'))
     #while esperando:
-    #    escolha=soquete.recv(1024)
+    #    escolha=soquete.recv(8192)
     #   if escolha[1]== addr[atual]:
     #      opcoes=escolha[0].decode('utf-8')

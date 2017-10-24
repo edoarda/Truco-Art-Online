@@ -21,7 +21,7 @@ class jogo:
     ult_truco=-1
     pontuacao=0
 
-    def __init__(self,jogadores=[],mao=[],C_jogadas=[(),(),(),()]):
+    def __init__(self,C_jogadas=[(),(),(),()]):
         self.inicial=0
         self.atual=0
         self.cartas_jogadas=C_jogadas
@@ -332,7 +332,10 @@ while 1:
     #ta estranho mas não vou mudar o de baixo
     print('cheguei')
     print('actualGame.atual')
-    broadcast(actualGame.jogadores, encode('V', str(actualGame.atual)))
+    #broadcast(actualGame.jogadores, encode('V', str(actualGame.atual)))
+    notificacao = 'É a vez de %i'%actualGame.atual
+    broadcast(actualGame.jogadores,notificacao)
+    actualGame.jogadores[actualGame.atual].send(encode('V',actualGame.atual))
     print('ate aqui')
     recebido=actualGame.jogadores[actualGame.atual].recv(1024)
     decodeSvr(recebido.decode('utf-8'), actualGame)

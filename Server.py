@@ -95,7 +95,11 @@ class jogo:
 def broadcast(grupo, msg):
     broad = encode('M','0',msg)
     for i in grupo:
-        i.send(broad.encode('utf-8'))
+        i.sendall(broad.encode('utf-8'))
+
+def manda_um(dest,code,player,opt=' '):
+    text=encode(code,player,opt)
+    dest.sendall(text.encode('utf-8'))
 
 #parte de comparação
 def compara(carta1, carta2, carta3, carta4, vira):
@@ -159,7 +163,7 @@ def cria_baralho():
     return baralho
 
 #parte de codificação e decodificação de mensagens
-def encode(letra,Nplayer,opt=' '):
+def encode(letra,Nplayer,opt='lixo'):
     msg = letra+':'+Nplayer+':'+opt +'@Ç'
     return msg
 
@@ -306,10 +310,12 @@ while 1:
     Scliente, addr=soquete.accept()
     print ('o cliente %s parece ter conectado'%str(addr[i]))
     #jogadores.append(Scliente)#para mensagens gerais
-    i=i+1
+
     actualGame.jogadores.append(Scliente)
-    aviso=encode('N',str(i))
-    actualGame.jogadores[0].send(aviso.encode('utf-8'))
+    manda_um(actualGame.jogadores[i],'N',str(i))
+    #aviso=encode('N',str(i))
+    #actualGame.jogadores[i].sendall(aviso.encode('utf-8'))
+    i=i+1
     if i%2==1:#separa os jogadores em duplas pra facilitar comunicação
         actualGame.time1.append(Scliente)
     else:
@@ -317,7 +323,7 @@ while 1:
     #aviso=('voce e o jogador :%d:. aguarde todos os jogadores conectarem'% i)
 
     if i==2:#alterar para jogar com o numero certo de pessoas
-        break
+       break
 msg='\n o jogo iniciara agora.'
 broadcast(actualGame.jogadores, msg)
 actualGame.baralho = cria_baralho()
@@ -341,7 +347,7 @@ while 1:
     notificacao = 'É a vez de %s'%actualGame.atual
     broadcast(actualGame.jogadores,notificacao)
     notif=encode('V',str(actualGame.atual)).encode('utf-8')
-    actualGame.jogadores[actualGame.atual].send(notif)
+    actualGame.jogadores[actualGame.atual].sendall(notif)
     print('ate aqui')
     recebido=actualGame.jogadores[actualGame.atual].recv(8192)
     decodeSvr(recebido.decode('utf-8'), actualGame)

@@ -14,6 +14,7 @@ def receber(soquete, fila):
              msg = fila.pop()
              if '@' in msg: # msg tem fim. yay!
                  msg = msg.split('@')
+                 print(fila)
                  return msg[0]
          # se fila.pop() soltar IndexError, é pq não tem uma msg completa na fila e é pra ouvir mensagens
          except IndexError:
@@ -25,7 +26,7 @@ def receber(soquete, fila):
      while 1:
         #é pra dar listen no sockete aqui
          #msg += "poneifeliz@Çbatat@ÇcacetepululuanteçAAAAA"
-         msg += soquete.recv(8192).decode('utf-8')
+         msg += soquete.recv(1024).decode('utf-8')
          if 'Ç' in msg:
              msg = msg.split('Ç')
              # dá append na fila a todas as mensagens com o @ no final pra gente saber que aquilo é uma msg inteira
@@ -34,10 +35,11 @@ def receber(soquete, fila):
              # tira o @ da msg[0] e retorna
              msg = msg[0].split('@')
              print(msg)
+             print(fila)
              return msg[0]
 
 def encode(letra,Nplayer,carta=' '):
-    msg = letra+':'+Nplayer+':'+carta + 'Ç'
+    msg = letra+':'+Nplayer+':'+carta + '@Ç'
     return msg
 
 #Mensagens que podem ser recebidas pelo cliente
@@ -55,12 +57,12 @@ def encode(letra,Nplayer,carta=' '):
 # Cabeçalho D = Fugir do truco
 # Cabeçalho R = Pedido Retruco
 
-def decodeClnt (deco,mao):
+def decodeClnt (deco,mao,numjogador):
     #deco = codigo.decode('utf-8')
     msg=deco.split(':')
     if msg[0]=='N':
-        numero = msg[1]
-        print ('Você é o jogador :%s:'%numero)
+        numjogador = msg[1]
+        print ('Você é o jogador :%s:'%numjogador)
     elif msg[0]=='M':
         print(msg[2])
     elif msg[0]=='V':
@@ -72,17 +74,17 @@ def decodeClnt (deco,mao):
             for i in range (0,len(mao)):#loop para botar as opções na tela
                 print('%s- %s de %s '% (str(i), mao[i][0], mao[i][1]))
             resp2=input("responda com o numero correspondente a carta escolhida")
-            opcao=mao.pop(int(resp2) - 1)
-            msg=encode('A',numjogador,(resp2-1))
-            print('A',numjogador,(resp2-1))
+            opcao=mao.pop(int(resp2))
+            msg=encode('A',str(numjogador),resp2)
+            print('A',numjogador,resp2)
         if int(resp)==2:
             print ('Escolha a carta a ser jogada:')
             for i in range (0,len(mao)):#loop para botar as opções na tela
                 print('%s- %s de %s '% (str(i), mao[i][0], mao[i][1]))
             resp2=input("responda com o numero correspondente a carta escolhida")
-            opcao=mao.pop(int(resp2) - 1)
-            msg=encode('F',numjogador,(resp2-1))
-            print('F',numjogador,(resp2-1))
+            opcao=mao.pop(int(resp2))
+            msg=encode('F',numjogador,resp2)
+            print('F',numjogador,resp2)
         c_sock.send(msg.encode('utf-8'))
     elif msg[0]=='W':
         #Receber as cartas e salvar
@@ -130,7 +132,7 @@ print ('soquete criado')
 destino=sys.argv[1]
 porta=int(sys.argv[2])
 mao=[]
-numjogador = []
+numjogador=-1
 fila=[]
 print ('tentando acessar a porta '+ str(porta) +' do local '+ destino)
 #precisamos esperar os 4 jogadores
@@ -141,8 +143,14 @@ while 1:
     print(fila)
     #loop de jogo
     #aguardar resposta
-    recebido=c_sock.recv(8192)
+    #recebido=c_sock.recv(8192)
     #decodeClnt(recebido)
-    recebido = receber(c_sock,fila)
-    decodeClnt(recebido,mao)
+    if len(fila)==0:
+        recebido = receber(c_sock,fila)
+    else:
+        recebido = fila.pop()
+        if '@' in recebido: # msg tem fim. yay!
+            recebdo = recebido.split('@')
+            print(fila)
+    decodeClnt(recebido,mao,numjogador)
     print('Terminando loop')

@@ -287,7 +287,9 @@ def jogar_carta(carta,player,tipo,lista,maos):
 #tentar criar um socket
 
 #fila de mensagens
+
 fila =[]
+gamestate=0
 soquete=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 print ('soquete criado')
 #escolhe uma porta do hospedeiro pro bind
@@ -305,65 +307,69 @@ soquete.listen(4)
 #divisão dos jogadores em times
 #time1 = []
 #time2= []
-actualGame = jogo()
-i=0
-
 while 1:
-    #O servidor fica aguardando as conexoes aqui
-    Scliente, addr=soquete.accept()
-    print ('o cliente %s parece ter conectado'%str(addr[i]))
-    #jogadores.append(Scliente)#para mensagens gerais
+    if gamestate==0:
+        actualGame = jogo()
+        i=0
 
-    actualGame.jogadores.append(Scliente)
-    manda_um(actualGame.jogadores[i],'N',str(i))
-    #aviso=encode('N',str(i))
-    #actualGame.jogadores[i].sendall(aviso.encode('utf-8'))
-    i=i+1
-    if i%2==1:#separa os jogadores em duplas pra facilitar comunicação
-        actualGame.time1.append(Scliente)
-    else:
-        actualGame.time2.append(Scliente)
-    #aviso=('voce e o jogador :%d:. aguarde todos os jogadores conectarem'% i)
+        while 1:
+        #O servidor fica aguardando as conexoes aqui
+            Scliente, addr=soquete.accept()
+            print ('o cliente %s parece ter conectado'%str(addr[i]))
+        #jogadores.append(Scliente)#para mensagens gerais
 
-    if i==2:#alterar para jogar com o numero certo de pessoas
-       break
-msg='\n o jogo iniciara agora.'
-broadcast(actualGame.jogadores, msg)
-actualGame.baralho = cria_baralho()
-random.shuffle(actualGame.baralho)
-actualGame.mao_jogadores,vira = distribui_cartas(actualGame.jogadores, actualGame.mao_jogadores, actualGame.baralho)
-print(actualGame.mao_jogadores)
-actualGame.vira=[vira[0], vira[1]]
-msg='O vira desta mão é %s de %s'%(vira[0],vira[1])
-print('aguardando um momento')
-#jogadores[0].send(msg.encode('utf-8'))
-#jogadores[1].send(msg.encode('utf-8'))
-#jogadores[0].send(encode('M',0,msg))
-broadcast(actualGame.jogadores, msg)
+            actualGame.jogadores.append(Scliente)
+            manda_um(actualGame.jogadores[i],'N',str(i))
+        #aviso=encode('N',str(i))
+        #actualGame.jogadores[i].sendall(aviso.encode('utf-8'))
+            i=i+1
+            if i%2==1:#separa os jogadores em duplas pra facilitar comunicação
+                actualGame.time1.append(Scliente)
+            else:
+                actualGame.time2.append(Scliente)
+        #aviso=('voce e o jogador :%d:. aguarde todos os jogadores conectarem'% i)
 
-#a partir daqui, devem ser pedidas as entradas especificas de cada jogador
+            if i==2:#alterar para jogar com o numero certo de pessoas
+                break
+        msg='\n o jogo iniciara agora.'
+        broadcast(actualGame.jogadores, msg)
+        gamestate=gamestate+1
+    if gamestate==1:
+        actualGame.baralho = cria_baralho()
+        random.shuffle(actualGame.baralho)
+        actualGame.mao_jogadores,vira = distribui_cartas(actualGame.jogadores, actualGame.mao_jogadores, actualGame.baralho)
+        print(actualGame.mao_jogadores)
+        actualGame.vira=[vira[0], vira[1]]
+        msg='O vira desta mão é %s de %s'%(vira[0],vira[1])
+        print('aguardando um momento')
+    #jogadores[0].send(msg.encode('utf-8'))
+    #jogadores[1].send(msg.encode('utf-8'))
+    #jogadores[0].send(encode('M',0,msg))
+        broadcast(actualGame.jogadores, msg)
+        gamestate=gamestate+1
+    #a partir daqui, devem ser pedidas as entradas especificas de cada jogador
+    if gamestate>=1:
+        while 1:
+        #ta estranho mas não vou mudar o de baixo
 
-while 1:
-    #ta estranho mas não vou mudar o de baixo
+        #broadcast(actualGame.jogadores, encode('V', str(actualGame.atual)))
+            notificacao = 'É a vez de %s'%actualGame.atual
+            broadcast(actualGame.jogadores,notificacao)
+            notif=encode('V',str(actualGame.atual)).encode('utf-8')
+            actualGame.jogadores[actualGame.atual].sendall(notif)
+        #recebido=actualGame.jogadores[actualGame.atual].recv(8192)
+            recebido=receber(actualGame.jogadores[actualGame.atual],fila)
+            decodeSvr(recebido, actualGame)
+            actualGame.proxJogador()
+            if actualGame.atual==2:
+                break
+        print(actualGame.Cartas_jogadas)
+        resp=compara(actualGame.Cartas_jogadas[0],actualGame.Cartas_jogadas[1],actualGame.Cartas_jogadas[2],actualGame.Cartas_jogadas[3],vira)
+        print(resp)
 
-    #broadcast(actualGame.jogadores, encode('V', str(actualGame.atual)))
-    notificacao = 'É a vez de %s'%actualGame.atual
-    broadcast(actualGame.jogadores,notificacao)
-    notif=encode('V',str(actualGame.atual)).encode('utf-8')
-    actualGame.jogadores[actualGame.atual].sendall(notif)
-    #recebido=actualGame.jogadores[actualGame.atual].recv(8192)
-    recebido=receber(actualGame.jogadores[actualGame.atual],fila)
-    decodeSvr(recebido, actualGame)
-    actualGame.proxJogador()
-    if actualGame.atual==2:
-        break
-print(actualGame.Cartas_jogadas)
-resp=compara(actualGame.Cartas_jogadas[0],actualGame.Cartas_jogadas[1],actualGame.Cartas_jogadas[2],actualGame.Cartas_jogadas[3],vira)
-print(resp)
-
-    #msg= ('V:%s: '% str(atual))
-    #jogadores[atual].send(msg.encode('utf-8'))
-    #while esperando:
-    #    escolha=soquete.recv(8192)
-    #   if escolha[1]== addr[atual]:
-    #      opcoes=escolha[0].decode('utf-8')
+        #msg= ('V:%s: '% str(atual))
+        #jogadores[atual].send(msg.encode('utf-8'))
+        #while esperando:
+        #    escolha=soquete.recv(8192)
+        #   if escolha[1]== addr[atual]:
+        #      opcoes=escolha[0].decode('utf-8')

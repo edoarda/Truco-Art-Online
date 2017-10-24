@@ -65,7 +65,9 @@ def decodeClnt (deco,mao,numjogador):
         print ('Você é o jogador :%s:'%numjogador[0])
     elif msg[0]=='M':
         print(msg[2])
-    elif msg[0]=='V':
+    elif msg[0]=='V' or msg[0]=='X':
+        if msg[0]=='X':
+            print('Não é possive pedir truco, escolha outra opção')
         print('É a sua vez')
         print("Escolha sua ação:\n 1-Jogar carta aberta\n 2-Jogar carta fechada\n 3-Pedir truco\n")
         resp=input("responda com o numero correspondente:")
@@ -82,7 +84,15 @@ def decodeClnt (deco,mao,numjogador):
                 print('%s- %s de %s '% (str(i), mao[i][0], mao[i][1]))
             resp2=input("responda com o numero correspondente a carta escolhida")
             opcao=mao.pop(int(resp2))
+
             msg=encode('F',str(numjogador[0]),resp2)
+
+            print('F',numjogador,resp2)
+        if int(resp)==2:
+            print ('Voce pediu truco:')
+            msg = encode("T",str(numjogador),resp2)
+            print('T',numjogador,resp2)
+
         c_sock.send(msg.encode('utf-8'))
     elif msg[0]=='W':
         #Receber as cartas e salvar
@@ -97,16 +107,20 @@ def decodeClnt (deco,mao,numjogador):
         resp = input("Escolha sua ação:\n 1-RETRUCAR!!!\n 2-Aceitar\n 3-Fugir\n")
         if int(resp) == 1 or resp.upper == 'RETRUCAR':
             print("Voce pediu retruco")
-            encode('R',numjogador,' ')
+            encode('R',str(numjogador),' ')
         elif int(resp) == 2 or resp.lower == 'aceitar':
             print("Voce aceitou o truco do seu oponente")
+
             encode('K',numjogador[0],' ')
+
+
         else:
             if int(resp) == 3 or resp.lower == 'fugir':
                 print('Voce fugiu')
             else:
                 print('Resposta fora dos padrões, foi considerado como fugir')
-            encode('D',numjogador[0],' ')
+                encode('D',numjogador[0],' ')
+
         #send (T resp)
     elif msg[0]=='E':
         print("O Jogo Terminou!! Deseja Continuar Jogando? :\n S-SIM\n N-NÃO\n")

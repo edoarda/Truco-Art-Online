@@ -317,7 +317,6 @@ msg='\n o jogo iniciara agora.'
 broadcast(jogo.jogadores,msg)
 jogo.baralho = cria_baralho()
 random.shuffle(jogo.baralho)
-print(jogo.baralho)
 vira = distribui_cartas(jogo.jogadores,jogo.mao_jogadores, jogo.baralho)
 jogo.vira=[vira[0],vira[1]]
 msg='O vira desta mão é %s de %s'%(vira[0],vira[1])
@@ -330,9 +329,10 @@ broadcast(jogo.jogadores,msg)
 
 while 1:
     #ta estranho mas não vou mudar o de baixo
-    broadcast(jogadores,encode('V',str(jogo.atual)))
-
-    recebido=jogadores[jogo.atual].recv(1024)
+    print('cheguei')
+    broadcast(jogo.jogadores,encode('V',str(jogo.atual)))
+    print('ate aqui')
+    recebido=jogo.jogadores[jogo.atual].recv(1024)
     decodeSvr(recebido.decode('utf-8'),jogo)
     jogo.proxJogador()
 

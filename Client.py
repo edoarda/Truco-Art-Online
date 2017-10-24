@@ -7,7 +7,7 @@ import socket
 #função para pegar mensagens enviadas garantir que é só uma mensagem mesmo
 # função que vai recebendo coisas, separa bonitinho no caso do python ter sido um amorzinho e peidado nas mensagens e taca o que sobrou numa fila
  #msgs terminam com @Ç
- def receber(soquete, fila):
+def receber(soquete, fila):
      msg = ""
      if len(fila) != 0:
          try:
@@ -22,7 +22,7 @@ import socket
              #sair de tudo e ir pro while dali de baixo
 
      #caso não tenha uma mensagem terminada na fila
-    while 1:
+     while 1:
         #é pra dar listen no sockete aqui
          #msg += "poneifeliz@Çbatat@ÇcacetepululuanteçAAAAA"
          msg += soquete.recv(1024).decode('utf-8')
@@ -54,8 +54,8 @@ def encode(letra,Nplayer,carta=' '):
 # Cabeçalho D = Fugir do truco
 # Cabeçalho R = Pedido Retruco
 
-def decodeClnt (codigo,mao):
-    deco = codigo.decode('utf-8')
+def decodeClnt (deco,mao):
+    #deco = codigo.decode('utf-8')
     msg=deco.split(':')
 
     if msg[0]=='M':
@@ -129,6 +129,7 @@ destino=sys.argv[1]
 porta=int(sys.argv[2])
 mao=[]
 numjogador = []
+fila=[]
 print ('tentando acessar a porta '+ str(porta) +' do local '+ destino)
 #precisamos esperar os 4 jogadores
 c_sock.connect((destino,porta))
@@ -139,6 +140,6 @@ while 1:
     #aguardar resposta
     recebido=c_sock.recv(1024)
     #decodeClnt(recebido)
-    recebido = receber(recebido,c_sock)
+    recebido = receber(c_sock,fila)
     print(type(recebido))
     decodeClnt(recebido,mao)

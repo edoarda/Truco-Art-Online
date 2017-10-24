@@ -288,13 +288,14 @@ print ('soquete colocado na porta '+ str(porta) +' do local '+ hospedeiro)
 #precisamos esperar os 4 jogadores
 soquete.listen(4)
 
-jogadores = []
-mao_jogadores=[]
-C_jogadas=[(),(),(),()]
-newGame = jogo(jogadores,mao_jogadores,C_jogadas)
+#jogadores = []
+#mao_jogadores=[]
+#C_jogadas=[(),(),(),()]
+#actualGame = jogo(jogadores, mao_jogadores, C_jogadas)
 #divisão dos jogadores em times
-time1 = []
-time2= []
+#time1 = []
+#time2= []
+actualGame = jogo()
 i=0
 
 while 1:
@@ -303,38 +304,38 @@ while 1:
     print ('o cliente %s parece ter conectado'%str(addr[0]))
     #jogadores.append(Scliente)#para mensagens gerais
     i=i+1
-    jogo.jogadores.append(Scliente)
+    actualGame.jogadores.append(Scliente)
     if i%2==1:#separa os jogadores em duplas pra facilitar comunicação
-        jogo.time1.append(Scliente)
+        actualGame.time1.append(Scliente)
     else:
-        jogo.time2.append(Scliente)
+        actualGame.time2.append(Scliente)
     #aviso=('voce e o jogador :%d:. aguarde todos os jogadores conectarem'% i)
     aviso=encode('N',str(i)," ")
-    jogo.jogadores[i-1].send(aviso.encode('utf-8'))
+    actualGame.jogadores[i - 1].send(aviso.encode('utf-8'))
     if i==2:#alterar para jogar com o numero certo de pessoas
         break
 msg='\n o jogo iniciara agora.'
-broadcast(jogo.jogadores,msg)
-jogo.baralho = cria_baralho()
-random.shuffle(jogo.baralho)
-vira = distribui_cartas(jogo.jogadores,jogo.mao_jogadores, jogo.baralho)
-jogo.vira=[vira[0],vira[1]]
+broadcast(actualGame.jogadores, msg)
+actualGame.baralho = cria_baralho()
+random.shuffle(actualGame.baralho)
+vira = distribui_cartas(actualGame.jogadores, actualGame.mao_jogadores, actualGame.baralho)
+actualGame.vira=[vira[0], vira[1]]
 msg='O vira desta mão é %s de %s'%(vira[0],vira[1])
 #jogadores[0].send(msg.encode('utf-8'))
 #jogadores[1].send(msg.encode('utf-8'))
 #jogadores[0].send(encode('M',0,msg))
-broadcast(jogo.jogadores,msg)
+broadcast(actualGame.jogadores, msg)
 
 #a partir daqui, devem ser pedidas as entradas especificas de cada jogador
 
 while 1:
     #ta estranho mas não vou mudar o de baixo
     print('cheguei')
-    broadcast(jogo.jogadores,encode('V',str(jogo.atual)))
+    broadcast(actualGame.jogadores, encode('V', str(actualGame.atual)))
     print('ate aqui')
-    recebido=jogo.jogadores[jogo.atual].recv(1024)
-    decodeSvr(recebido.decode('utf-8'),jogo)
-    jogo.proxJogador()
+    recebido=actualGame.jogadores[actualGame.atual].recv(1024)
+    decodeSvr(recebido.decode('utf-8'), actualGame)
+    actualGame.proxJogador()
 
     #msg= ('V:%s: '% str(atual))
     #jogadores[atual].send(msg.encode('utf-8'))

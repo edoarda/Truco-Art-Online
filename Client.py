@@ -143,3 +143,4 @@ while 1:
     recebido = receber(c_sock,fila)
     print(type(recebido))
     decodeClnt(recebido,mao)
+    print('Terminando loop')

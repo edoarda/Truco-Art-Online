@@ -27,11 +27,11 @@ class jogo:
         self.cartas_jogadas=cartas_jogadas
 
     def divide_times(self):
-        if(jogadores.length == 4):
-            self.time1.append(jogadores[0])
-            self.time1.append(jogadores[1])
-            self.time2.append(jogadores[2])
-            self.time2.append(jogadores[3])
+        if(self.jogadores.length == 4):
+            self.time1.append(self.jogadores[0])
+            self.time1.append(self.jogadores[1])
+            self.time2.append(self.jogadores[2])
+            self.time2.append(self.jogadores[3])
         else:
             print('faltam jogadores')
 
@@ -41,9 +41,9 @@ class jogo:
 
     def retornaTime(self,numero):
         for i in self.time1:
-            if numero==time1[i]:
+            if numero==self.time1[i]:
                 return 1
-            elif numero==time2[i]:
+            elif numero==self.time2[i]:
                 return 2
         return 0
 
@@ -202,24 +202,24 @@ def decodeSvr(codigo,jogo):
         if guarda[0]== 'F':
             msg=('o jogador %s jogou uma carta fechada'% str(guarda[1]+1))
             envio=encode('M','4',msg)
-            broadcast(jogadores,envio)
-            jogar_carta(guarda[2],guarda[1],1,C_jogadas,jogo.mao)
+            broadcast(jogo.jogadores,envio)
+            jogar_carta(guarda[2],guarda[1],1,jogo.C_jogadas,jogo.mao)
         elif guarda[0] == 'A':
-            jogar_carta(guarda[2],guarda[1],0,C_jogadas,jogo.mao)
-            msg=('o jogador %s jogou %s de %s'%(str(guarda[1]+1),C_jogadas[guarda[1]][0],C_jogadas[guarda[1]][1]))
+            jogar_carta(guarda[2],guarda[1],0,jogo.C_jogadas,jogo.mao)
+            msg=('o jogador %s jogou %s de %s'%(str(guarda[1]+1),jogo.C_jogadas[guarda[1]][0],jogo.C_jogadas[guarda[1]][1]))
             envio=encode('M',4,msg)
-            broadcast(jogadores,envio)
+            broadcast(jogo.jogadores,envio)
         elif guarda[0] == 'T':
             if jogo.pontuacao>12 or jogo.ult_truco == guarda[1]:
                 notifica = encode('X',numJogador)
-                jogadores[numJogador] = notifica.encode('utf-8')
+                jogo.jogadores[numJogador] = notifica.encode('utf-8')
             else:
                 ult_truco = guarda[1]
                 envio=encode(guarda[0],guarda[1])
                 if (guarda[1]%2==1):
-                    broadcast(time2,envio)
+                    broadcast(jogo.time2,envio)
                 else:
-                    broadcast(time1,envio)
+                    broadcast(jogo.time1,envio)
     else:
         if guarda[0]== 'K' or guarda[0]== 'D' or guarda[0]== 'R':
             respt = jogo.resposta('K')

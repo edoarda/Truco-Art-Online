@@ -24,7 +24,7 @@ class jogo:
     #var truco
     truco = False
     ult_truco=-1
-    pontuacao=0
+    pontuacao=[0,0]
 
     def __init__(self,C_jogadas=[(),(),("4", "espadas", 1),("5", "copas", 2)]):
         self.inicial=0
@@ -40,9 +40,13 @@ class jogo:
         else:
             print('faltam jogadores')
 
-    def retornaPontuacao(self,):
+    def incrementaPontuacao(self, pont=1):
+        self.pontuacao=self.pontuacao+pont
+
+    def retornaPontuacao(self,numerojogador):
+        time = self.retornaTime(numerojogador)
         print('pensar depois')
-        return self.pontuacao
+        return self.pontuacao[time]
 
     def retornaTime(self,numero):
         for i in self.time1:
@@ -101,6 +105,9 @@ class jogo:
 
     def nxtRodada(self):
         self.rodada=self.rodada+1
+
+    def incrementaContagem(self):
+        self.contagem=self.contagem+1
 
 
 
@@ -222,12 +229,14 @@ def decodeSvr(codigo,jogo):
             msg=('o jogador %s jogou uma carta fechada'% str(guarda[1]))
             broadcast(jogo.jogadores,msg)
             jogar_carta(guarda[2],guarda[1],1,jogo.Cartas_jogadas,jogo.mao)
+            jogo.incrementaContagem()
         elif guarda[0] == 'A':
             jogar_carta(guarda[2],guarda[1],0,jogo.Cartas_jogadas,jogo.mao_jogadores)
             msg=('o jogador %s jogou %s de %s'%(str(guarda[1]),str(jogo.Cartas_jogadas[int(guarda[1])][0]),str(jogo.Cartas_jogadas[int(guarda[1])][1])))
+            jogo.incrementaContagem()
             broadcast(jogo.jogadores,msg)
         elif guarda[0] == 'T':
-            if jogo.pontuacao>12 or jogo.ult_truco == guarda[1]:
+            if jogo.pontuacao[numJogador]>12 or jogo.ult_truco == guarda[1]:
                 notifica = encode('X',numJogador)
                 jogo.jogadores[numJogador] = notifica.encode('utf-8')
             else:
@@ -384,11 +393,11 @@ while 1:
 
             if actualGame.contagem==4:
                 #realiza a contagem de pontos
-                pontuacao = compara(actualGame.Cartas_jogadas[0],actualGame.Cartas_jogadas[1],actualGame.Cartas_jogadas[2],actualGame.Cartas_jogadas[3],actualGame.vira)
-                msgvitoria = "O time %i venceu a rodada"%pontuacao
+                pont = compara(actualGame.Cartas_jogadas[0],actualGame.Cartas_jogadas[1],actualGame.Cartas_jogadas[2],actualGame.Cartas_jogadas[3],actualGame.vira)
+                msgvitoria = "O time %i venceu a rodada"%pont
                 broadcast(actualGame.jogadores,msgvitoria)
-                actualGame.proxInicial(int(pontuacao))
-                actualGame.vitoriosos[actualGame.retornaTime(int(pontuacao)-1)].append(int(pontuacao))
+                actualGame.proxInicial(int(pont))
+                actualGame.vitoriosos[actualGame.retornaTime(int(pont)-1)].append(int(pont))
                 actualGame.nxtRodada()
                 gamestate=1
 
@@ -397,9 +406,11 @@ while 1:
                 v1=actualGame.vitoriosos.pop()
                 if v1==v2:
                     print('Time %i ganhou'%v1)
-                    gamestate=3#fim de jogo
-                actualGame.vitoriosos.append(v1)
-                actualGame.vitoriosos.append(v2)
+                    actualGame.incrementaPontuacao()
+                    gamestate=1#fim de jogo
+                else:
+                    actualGame.vitoriosos.append(v1)
+                    actualGame.vitoriosos.append(v2)
 
             if actualGame.rodada>3:
                 #fim do jogo
@@ -408,7 +419,8 @@ while 1:
                 v1 = actualGame.vitoriosos.pop()
                 vencedor = acha_vencedor(v1,v2,v3)
                 print('Time %i ganhou'%vencedor)
-                gamestate=3#fim de jogo
+                actualGame.incrementaPontuacao()
+                gamestate=1#fim de jogo
 
             actualGame.proxJogador()
             if actualGame.atual==2:

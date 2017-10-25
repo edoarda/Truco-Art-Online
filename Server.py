@@ -17,7 +17,12 @@ class jogo:
     vira = []
     resposta = ['x','x']
     baralho = []
+    fim_rodada = False
+    rodada = 0
+    contagem = 0
+    vitoriosos = []
     #var truco
+    truco = False
     ult_truco=-1
     pontuacao=0
 
@@ -90,6 +95,13 @@ class jogo:
         self.atual=self.atual+1
         if self.atual>4:
             atual=0#super gambiarra
+
+    def proxInicial(self, proximo):
+        self.inicial=int(proximo)
+
+    def nxtRodada(self):
+        self.rodada=self.rodada+1
+
 
 
 def broadcast(grupo, msg):
@@ -249,7 +261,15 @@ def decodeSvr(codigo,jogo):
             #enviar mensagem pro jogador da vez que veio errado e dar a vez de novo
             print('falta')
 
-
+def acha_vencedor(v1,v2,v3):
+     if v1==v3:
+         v1=v1+v3
+     else:
+         v2 = v2+v3
+     if v1>v2:
+         return v1
+     else:
+         return v2
 
 def distribui_cartas(grupo, maos, baralho):
     if len(maos)!=0:
@@ -338,6 +358,7 @@ while 1:
         actualGame.baralho = cria_baralho()
         random.shuffle(actualGame.baralho)
         actualGame.mao_jogadores,vira = distribui_cartas(actualGame.jogadores, actualGame.mao_jogadores, actualGame.baralho)
+        actualGame.rodada = 0 #para garantir que nao dê erro
         print(actualGame.mao_jogadores)
         actualGame.vira=[vira[0], vira[1]]
         msg='O vira desta mão é %s de %s'%(vira[0],vira[1])
@@ -360,12 +381,49 @@ while 1:
         #recebido=actualGame.jogadores[actualGame.atual].recv(8192)
             recebido=receber(actualGame.jogadores[actualGame.atual],fila)
             decodeSvr(recebido, actualGame)
+
+            if actualGame.contagem==4:
+                #realiza a contagem de pontos
+                pontuacao = compara(actualGame.Cartas_jogadas[0],actualGame.Cartas_jogadas[1],actualGame.Cartas_jogadas[2],actualGame.Cartas_jogadas[3],actualGame.vira)
+                msgvitoria = "O time %i venceu a rodada"%pontuacao
+                broadcast(actualGame.jogadores,msgvitoria)
+                actualGame.proxInicial(int(pontuacao))
+                actualGame.vitoriosos[actualGame.retornaTime(int(pontuacao)-1)].append(int(pontuacao))
+                actualGame.nxtRodada()
+                gamestate=1
+
+            if actualGame.rodada==2:
+                v2=actualGame.vitoriosos.pop()
+                v1=actualGame.vitoriosos.pop()
+                if v1==v2:
+                    print('Time %i ganhou'%v1)
+                    gamestate=3#fim de jogo
+                actualGame.vitoriosos.append(v1)
+                actualGame.vitoriosos.append(v2)
+
+            if actualGame.rodada>3:
+                #fim do jogo
+                v3 = actualGame.vitoriosos.pop()
+                v2 = actualGame.vitoriosos.pop()
+                v1 = actualGame.vitoriosos.pop()
+                vencedor = acha_vencedor(v1,v2,v3)
+                print('Time %i ganhou'%vencedor)
+                gamestate=3#fim de jogo
+
             actualGame.proxJogador()
             if actualGame.atual==2:
                 break
+
         print(actualGame.Cartas_jogadas)
         resp=compara(actualGame.Cartas_jogadas[0],actualGame.Cartas_jogadas[1],actualGame.Cartas_jogadas[2],actualGame.Cartas_jogadas[3],vira)
         print(resp)
+    if gamestate==3:
+        #endgame
+
+        saida = encode('E','0',msg)
+        for i in actualGame.jogadores:
+            i.sendall(saida.encode('utf-8'))
+
 
         #msg= ('V:%s: '% str(atual))
         #jogadores[atual].send(msg.encode('utf-8'))

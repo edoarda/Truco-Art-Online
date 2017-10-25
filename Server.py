@@ -175,7 +175,7 @@ def cria_baralho():
     return baralho
 
 #parte de codificação e decodificação de mensagens
-def encode(letra,Nplayer,opt='lixo'):
+def encode(letra,Nplayer,opt=''):
     msg = letra+':'+Nplayer+':'+opt +'@Ç'
     return msg
 
